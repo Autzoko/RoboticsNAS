@@ -102,3 +102,10 @@ Inference-schedule grid at 30k (rows: denoising steps, cols: executed horizon):
 
 Findings: (1) offline val loss is anti-correlated with closed-loop SR across checkpoints (would pick the worst ckpt);
 (2) horizon 50 (SmolVLA default execution) is clearly worst; (3) 2 Euler steps ~= 10 steps -> 5x fewer expert passes.
+
+### 2026-10-05 22:30 — Supernet finished (18657517, 30k steps, 1 GPU, ~7.6 h)
+Offline-val fm loss: anchor 0.495@10k -> 0.546@30k (mild rise; standalone rose to 0.961);
+smallest subnet (v8-e4-f0.5-t16) 0.494@10k -> **0.467@30k** (< anchor: offline loss prefers the smallest net).
+Auto-launched (`scripts/post_supernet.sh`): record_anchor 18666150 (anchor h10, 5 eps/task, ep-offset 100,
+visited states) -> proxies (afterok); E2 benchmark bench_sn g0-g9 (18666152-62), 111 archs x 400 eps.
+E5 evals auto-launched as standalone runs finish (`scripts/e5_watch.sh`).
