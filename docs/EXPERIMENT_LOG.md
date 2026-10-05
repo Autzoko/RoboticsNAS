@@ -81,3 +81,24 @@ Supernet at 11.5k steps: val fm anchor 0.495, smallest 0.494 @10k.
   4. `rnas.analyze --bench outputs/bench_sn --out results/e2` ; search replay (rnas/search.py).
   5. E5: eval each standalone ckpt with its arch key (search-val, 10 eps) vs supernet-inherited SR.
   6. Freeze `results/final_candidates.json`, short fixed fine-tunes from supernet, then `scripts/launch_test.sh`.
+
+### 2026-10-05 20:40 — RESULT: offline loss vs closed-loop SR over training (standalone default arch)
+Search-val, 10 eps x 40 tasks = 400 episodes per cell, benchmark seeds (jobs 18660168-72).
+
+| ckpt | offline-val fm loss | SR h50 | SR h10 |
+|---|---|---|---|
+| 10k | 0.515 | 0.477 | 0.700 |
+| 20k | 0.738 | 0.625 | 0.772 |
+| 30k | 0.961 | 0.713 | 0.850 |
+
+Inference-schedule grid at 30k (rows: denoising steps, cols: executed horizon):
+
+| steps \ h | 5 | 10 | 25 | 50 |
+|---|---|---|---|---|
+| 2  | 0.815 | 0.818 | 0.848 | 0.685 |
+| 4  | 0.813* | 0.853* | 0.829* | 0.715 |
+| 10 | 0.815 | 0.850 | 0.828 | 0.713 |
+(* 38-39/40 tasks at time of logging)
+
+Findings: (1) offline val loss is anti-correlated with closed-loop SR across checkpoints (would pick the worst ckpt);
+(2) horizon 50 (SmolVLA default execution) is clearly worst; (3) 2 Euler steps ~= 10 steps -> 5x fewer expert passes.
