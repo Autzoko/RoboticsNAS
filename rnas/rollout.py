@@ -128,7 +128,8 @@ def main():
         keys = args.archs.split(",")
     archs = [Arch.from_key(k) for k in keys]
     model = build_elastic("cuda", sort_neurons=False).eval()
-    load_trainable(model, args.ckpt)
+    if args.ckpt != "none":  # "none" = smolvla_base weights (only for E0 env/seed checks)
+        load_trainable(model, args.ckpt)
     pre, post = make_processors(model, args.stats)
     env_pre = PolicyProcessorPipeline(steps=[LiberoProcessorStep()])
 

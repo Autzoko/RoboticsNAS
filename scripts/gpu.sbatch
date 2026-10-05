@@ -21,6 +21,6 @@ nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
 if [ "${NPROC:-1}" -gt 1 ]; then
   torchrun --standalone --nproc_per_node=$NPROC -m "$@"
 else
-  python -m "$@"
+  if [ "$1" = "--sh" ]; then shift; bash "$@"; else python -m "$@"; fi
 fi
 echo "end=$(date -Is)"
