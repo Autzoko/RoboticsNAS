@@ -58,6 +58,11 @@ def build_elastic(device: str = "cuda", sort_neurons: bool = True) -> ElasticSmo
     assert len(model.vlm_layers) == MAX_VLM
     if sort_neurons:
         sort_ffn_neurons(model.exp_layers)
+    # transformers builds the expert in the config dtype (bf16); keep master weights of everything trainable
+    # in fp32 (bf16 autocast is used for compute).
+    for p in model.parameters():
+        if p.requires_grad:
+            p.data = p.data.float()
     return model.to(device)
 
 
