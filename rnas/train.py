@@ -208,6 +208,8 @@ def main():
                       "rng": rng.getstate(), "args": vars(args)}
                 torch.save(ck, out / "last.tmp")
                 os.replace(out / "last.tmp", out / "last.pt")
+                if step % 10000 == 0:  # keep sparse snapshots (offline-loss vs closed-loop over training)
+                    torch.save({"model": ck["model"], "step": step}, out / f"step{step // 1000}k.pt")
         epoch += 1
     if rank == 0:
         torch.save({"model": trainable_state_dict(model), "step": step, "args": vars(args)}, out / "final.pt")
