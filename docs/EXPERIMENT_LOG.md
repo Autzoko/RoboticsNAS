@@ -121,3 +121,6 @@ E5 evals auto-launched as standalone runs finish (`scripts/e5_watch.sh`).
   v16-e12-top-f0.5-t16-s2-h25 0.828 | v8-e12-stretch-f0.75-t64-s2-h50 0.690 | default h50/h10 0.713/0.850.
   -> much smaller networks match the default once the execution horizon is short; h50 dominates failures.
 - E2 bench g0-g4 running since 00:06-00:25 (backfill); g5-g9 est. 03:00-08:30; proxies est. 11:00.
+- 01:30: bench g6 (18666158, cn015) hung after 3 rows (env workers idle, GPU 0%) -> added reset/step timeouts
+  (600/300 s) with worker recreation + up to 3 retries per (arch, task) to `rnas/rollout.py`; g6 cancelled and
+  resubmitted as 18668036 (resumes; finished rows are skipped). Other groups at ~2.2 h/group pace.
