@@ -109,3 +109,6 @@ smallest subnet (v8-e4-f0.5-t16) 0.494@10k -> **0.467@30k** (< anchor: offline l
 Auto-launched (`scripts/post_supernet.sh`): record_anchor 18666150 (anchor h10, 5 eps/task, ep-offset 100,
 visited states) -> proxies (afterok); E2 benchmark bench_sn g0-g9 (18666152-62), 111 archs x 400 eps.
 E5 evals auto-launched as standalone runs finish (`scripts/e5_watch.sh`).
+- 23:30: all E2/E5/proxy jobs pending on priority (fair-share drop after today's ~60 GPU-h; no idle GPUs on the
+  cluster). Time limits lowered to 8 h for backfill. Scheduler estimates first starts ~10:00 on 10-06.
+- `rnas/replay.py` (RQ3 search replay) + `rnas/analyze.py` verified end-to-end on a synthetic table on Jubail.
