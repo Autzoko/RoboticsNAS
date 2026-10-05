@@ -67,3 +67,17 @@ Offline-val flow loss over training (fixed noise/t, 8x32 val samples):
 Offline loss would select the 6k checkpoint. Closed-loop search-val evals launched (jobs 18660168-72):
 10k/20k ckpts x {h50,h10}; 30k ckpt x full {steps 2,4,10} x {horizon 5,10,25,50} grid, 10 eps/task (bench seeds).
 Supernet at 11.5k steps: val fm anchor 0.495, smallest 0.494 @10k.
+
+### 2026-10-05 18:41 — Status / handoff
+- Partial curve evals (spatial + part of object): SR rises 10k->20k (h50 0.47->0.60, h10 0.69->0.82) while offline-val
+  flow loss rises 0.515->0.738. Final numbers in `outputs/curve_fixed/*.jsonl` (jobs 18660168-72).
+- Running: supernet 18657517 (step ~16k/30k, ETA ~22:20), E5 standalone 18657911-17 (~3.5 h each); 18657910 done.
+- NEXT (in order):
+  1. Supernet done -> anchor visited-state recording: `rnas.rollout --ckpt outputs/supernet_v1/final.pt
+     --archs v16-e16-stretch-f1-t64-s10-h10 --n-eps 5 --ep-offset 100 --record-dir outputs/bench_sn/visited`.
+  2. E2: `bash scripts/launch_bench.sh outputs/supernet_v1/final.pt sn 10` (111 archs, 10 eps/task).
+  3. Proxies: `rnas.proxies --ckpt ... --archs results/bench_archs.json --record-dir outputs/bench_sn/visited
+     --out outputs/bench_sn/proxies.jsonl`; copy `outputs/latency/a100_bench.jsonl` -> `outputs/bench_sn/latency.jsonl`.
+  4. `rnas.analyze --bench outputs/bench_sn --out results/e2` ; search replay (rnas/search.py).
+  5. E5: eval each standalone ckpt with its arch key (search-val, 10 eps) vs supernet-inherited SR.
+  6. Freeze `results/final_candidates.json`, short fixed fine-tunes from supernet, then `scripts/launch_test.sh`.
