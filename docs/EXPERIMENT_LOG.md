@@ -28,3 +28,13 @@ Every final-test (official LIBERO init states) run must be listed in the "Test-s
 - LIBERO (EGL, 256x256, hard reset) runs on A100 nodes. Common random numbers verified: identical reset seeds give
   identical sim-state hashes across archs; different episodes give different layouts.
 - Untrained (smolvla_base, no LIBERO training) SR = 0/2 on spatial task 0, as expected. 280-step batch: 15-31 s.
+
+### 2026-10-05 — E1 training launch
+- First launch (jobs 18656510 supernet, 18656511 fixed) aborted: transformers builds the action expert in bf16
+  (config dtype), so AdamW updated bf16 master weights; the supernet's flat grad all-reduce crashed on it.
+  Fix (commit "Keep trainable params in fp32"): all trainable params cast to fp32, bf16 autocast for compute.
+  Both runs restarted from scratch for a fair supernet-vs-standalone comparison.
+- Throughput reference (old run, fixed default arch, H100 NVL, batch 64): 2.5 it/s, GPU-bound (98% util).
+- Latency (A100 80GB PCIe, batch 1, eager bf16): ~85-220 ms per policy call across archs (job 18656514).
+- Relaunch: supernet 18656828 (2 GPUs, 30k steps, global batch 64, sandwich: anchor+smallest+2 random, KD w=1),
+  fixed default 18656829 (1 GPU, 30k steps, batch 64).
