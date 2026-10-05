@@ -1,8 +1,8 @@
 #!/bin/bash
 # E0: split/stats, numerical equivalence, env + seed (common-random-number) check. Run via gpu.sbatch-like env.
 set -eo pipefail
-python -m rnas.data --out-dir configs
-python -m rnas.check_equiv
+[ -f configs/train_stats.json ] || python -m rnas.data --out-dir configs
+[ -n "$SKIP_EQUIV" ] || python -m rnas.check_equiv
 python -m rnas.rollout --ckpt none --archs v16-e16-stretch-f1-t64-s10-h50,v8-e4-stretch-f0.5-t16-s2-h5 \
   --suites libero_spatial --tasks 0 --n-eps 2 --out outputs/e0/rollout_check.jsonl
 python - <<'PY'

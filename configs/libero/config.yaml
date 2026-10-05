@@ -1,0 +1,5 @@
+benchmark_root: /scratch/ll5582/RoboticsNAS/env/lib/python3.12/site-packages/libero/libero
+bddl_files: /scratch/ll5582/RoboticsNAS/env/lib/python3.12/site-packages/libero/libero/bddl_files
+init_states: /scratch/ll5582/RoboticsNAS/env/lib/python3.12/site-packages/libero/libero/init_files
+datasets: /scratch/ll5582/RoboticsNAS/cache/libero/datasets
+assets: /scratch/ll5582/RoboticsNAS/cache/libero/assets

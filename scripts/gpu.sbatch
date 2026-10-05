@@ -15,6 +15,7 @@ export HF_HUB_OFFLINE=1
 export TOKENIZERS_PARALLELISM=false
 export MUJOCO_GL=egl PYOPENGL_PLATFORM=egl
 export PYTHONPATH=$PWD
+export LIBERO_CONFIG_PATH=$PWD/configs/libero
 export PATH=$PWD/env/bin:$PATH
 echo "host=$(hostname) gpus=$CUDA_VISIBLE_DEVICES commit=$(git rev-parse --short HEAD) start=$(date -Is)"
 nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
