@@ -39,3 +39,6 @@ PY
 $PY -c "import torch,transformers,mujoco,robosuite,libero;print(torch.__version__,torch.version.cuda,transformers.__version__,mujoco.__version__,robosuite.__version__)"
 conda clean -a -y >/dev/null 2>&1 || true
 date -Is > $ROOT/.env_ready
+# LIBERO assets (HF Hub) into project cache; package-local symlink (some LIBERO code ignores the config).
+HF_HOME=$ROOT/cache/huggingface $PY -c "from libero.libero.utils.download_utils import download_assets_from_huggingface as d; d('$ROOT/cache/libero/assets')"
+ln -sfn $ROOT/cache/libero/assets $ENV/lib/python3.12/site-packages/libero/libero/assets
