@@ -125,3 +125,11 @@ E5 evals auto-launched as standalone runs finish (`scripts/e5_watch.sh`).
   (600/300 s) with worker recreation + up to 3 retries per (arch, task) to `rnas/rollout.py`; g6 cancelled and
   resubmitted as 18668036 (resumes; finished rows are skipped). Other groups at ~2.2 h/group pace.
 - 02:20: g9 on cn015 very slow (up to 249 s per arch-task vs ~20 s) -> cancelled, resubmitted excluding cn015 (g9r); g6r also excludes cn015.
+
+### 2026-10-06 03:05 — E2 interim (17 complete archs, supernet weights)
+- Split-half reliability (200 vs 200 eps): Spearman 0.900 / Kendall 0.787 -> 400-ep grid ranks reliably.
+- cl_1ep (1 ep/task = 40 eps) Kendall 0.752 vs held-out SR; cl_2ep 0.742.
+- SR range 0.21-0.82; top: v16-e16-f1-t64-s2-h5 0.818 (2 denoise steps), default s10-h10 0.800, s10-h50 0.693.
+- **Weight-sharing gap suspicion:** e4 subnets 0.21-0.49 under supernet weights vs standalone
+  v12-e4-stretch-f1-t16-s4-h5 0.853 (E5). Shallow experts look under-trained by the sandwich rule -> E5 rank check and
+  post-search fine-tuning are essential; report honestly.
