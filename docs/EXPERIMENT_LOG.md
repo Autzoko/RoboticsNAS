@@ -41,3 +41,7 @@ Every final-test (official LIBERO init states) run must be listed in the "Test-s
 - 14:18: supernet 18656828 (2xH100, manual flat all-reduce) crashed at step ~1550 with a CUDA illegal memory
   access on rank 1 (NCCL watchdog). Loss curve until then was healthy (step 1500: fm anchor 0.71, smallest 0.76).
   Not debugged further; relaunched single-GPU (18657517, batch 64, ckpt every 1000 steps, auto-resume).
+- Single-GPU supernet 18657517: 1.09 it/s on A100 (ETA ~22:20). 
+- E5 (weight-sharing validity) launched early to use idle time: 7 archs pre-registered in `results/e5_archs.json`
+  (random among benchmark nets, seed 1, chosen before any closed-loop result) trained standalone 30k steps
+  (jobs 18657910-18657917); default arch standalone = `outputs/fixed_default`.
