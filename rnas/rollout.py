@@ -27,6 +27,7 @@ from .space import Arch
 SUITES = ("libero_spatial", "libero_object", "libero_goal", "libero_10")
 SEARCH_SEED_BASE = 1_000_000
 TEST_SEED = 7
+RESET_TIMEOUT, STEP_TIMEOUT = 600, 300  # seconds; a hung MuJoCo/EGL worker -> recreate envs and retry
 
 
 def _make_env(suite_name: str, task_id: int, episode_index: int, init_states: bool):
@@ -61,7 +62,8 @@ def run_episodes(venv, model, arch: Arch, pre, post, env_pre, seeds, max_steps, 
     from lerobot.envs.utils import NEW_ROLLOUT_OPTION, preprocess_observation
 
     n = venv.num_envs
-    obs, _ = venv.reset(seed=seeds, options={NEW_ROLLOUT_OPTION: True})
+    venv.reset_async(seed=seeds, options={NEW_ROLLOUT_OPTION: True})
+    obs, _ = venv.reset_wait(timeout=RESET_TIMEOUT)
     hashes = list(venv.call("sim_hash"))
     done = np.zeros(n, bool)
     succ = np.zeros(n, bool)
@@ -87,7 +89,8 @@ def run_episodes(venv, model, arch: Arch, pre, post, env_pre, seeds, max_steps, 
             qi = 0
         act = queue[:, qi]
         qi += 1
-        obs, _, term, trunc, info = venv.step(act)
+        venv.step_async(act)
+        obs, _, term, trunc, info = venv.step_wait(timeout=STEP_TIMEOUT)
         new = (term | trunc) & ~done
         if new.any():
             s = np.asarray(info.get("is_success", np.zeros(n, bool)), bool)
@@ -162,8 +165,22 @@ def main():
                 if args.record_dir and ai == 0:
                     rec = Recorder(Path(args.record_dir) / f"{suite}_t{tid}.npz", args.record_every)
                 t1 = time.time()
-                r = run_episodes(venv, model, a, pre, post, env_pre, seeds,
-                                 TASK_SUITE_MAX_STEPS[suite], desc, record=rec)
+                for attempt in range(3):
+                    try:
+                        r = run_episodes(venv, model, a, pre, post, env_pre, seeds,
+                                         TASK_SUITE_MAX_STEPS[suite], desc, record=rec)
+                        break
+                    except Exception as e:  # noqa: BLE001  (timeouts / dead workers)
+                        print(f"[retry {attempt}] {suite} t{tid} {a.key()}: {type(e).__name__}: {e}", flush=True)
+                        try:
+                            venv.close(terminate=True)
+                        except Exception:  # noqa: BLE001
+                            pass
+                        venv = make_venv(suite, tid, eps, args.mode)
+                        if rec is not None:
+                            rec = Recorder(rec.path, rec.every)
+                else:
+                    raise RuntimeError(f"{suite} t{tid} {a.key()} failed 3 times")
                 if rec is not None:
                     rec.save()
                 row = {"arch": a.key(), "suite": suite, "task": tid, "mode": args.mode, "episodes": eps,
