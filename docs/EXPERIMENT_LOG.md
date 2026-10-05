@@ -45,3 +45,18 @@ Every final-test (official LIBERO init states) run must be listed in the "Test-s
 - E5 (weight-sharing validity) launched early to use idle time: 7 archs pre-registered in `results/e5_archs.json`
   (random among benchmark nets, seed 1, chosen before any closed-loop result) trained standalone 30k steps
   (jobs 18657910-18657917); default arch standalone = `outputs/fixed_default`.
+
+### 2026-10-05 — Pipeline validation (job 18658750)
+Standalone default arch, step 10k (`outputs/fixed_default/step10k.pt`), search-val, 3 eps/task (ep-offset 200,
+disjoint from benchmark seeds), 40 tasks:
+
+| arch | spatial | object | goal | long | all |
+|---|---|---|---|---|---|
+| v16-e16-stretch-f1-t64-s10-h50 | 0.50 | 0.50 | 0.63 | 0.23 | 0.467 |
+| v16-e16-stretch-f1-t64-s10-h10 | 0.63 | 0.93 | 0.83 | 0.43 | 0.708 |
+
+- Same weights, only the executed horizon changes: +24 pts. Offline flow loss is identical for both by construction ->
+  first concrete evidence for the inference-schedule axes / offline-proxy blindness.
+- Offline-val flow loss of this run rises after 6k steps (0.495@6k -> 0.515@10k) while train loss falls; snapshots
+  kept at 10k/20k/30k to relate offline loss and closed-loop SR over training.
+- Cost: ~18 s wall per (arch, task) with 3 envs.
