@@ -60,3 +60,10 @@ disjoint from benchmark seeds), 40 tasks:
 - Offline-val flow loss of this run rises after 6k steps (0.495@6k -> 0.515@10k) while train loss falls; snapshots
   kept at 10k/20k/30k to relate offline loss and closed-loop SR over training.
 - Cost: ~18 s wall per (arch, task) with 3 envs.
+
+### 2026-10-05 17:40 — Standalone default arch finished (30k steps)
+Offline-val flow loss over training (fixed noise/t, 8x32 val samples):
+2k 0.543 | 4k 0.505 | 6k **0.495** | 8k 0.507 | 10k 0.515 | 12k 0.550 | 16k 0.625 | 20k 0.738 | 24k 0.863 | 28k 0.944 | 30k 0.961.
+Offline loss would select the 6k checkpoint. Closed-loop search-val evals launched (jobs 18660168-72):
+10k/20k ckpts x {h50,h10}; 30k ckpt x full {steps 2,4,10} x {horizon 5,10,25,50} grid, 10 eps/task (bench seeds).
+Supernet at 11.5k steps: val fm anchor 0.495, smallest 0.494 @10k.
