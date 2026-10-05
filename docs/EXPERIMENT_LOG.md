@@ -112,3 +112,12 @@ E5 evals auto-launched as standalone runs finish (`scripts/e5_watch.sh`).
 - 23:30: all E2/E5/proxy jobs pending on priority (fair-share drop after today's ~60 GPU-h; no idle GPUs on the
   cluster). Time limits lowered to 8 h for backfill. Scheduler estimates first starts ~10:00 on 10-06.
 - `rnas/replay.py` (RQ3 search replay) + `rnas/analyze.py` verified end-to-end on a synthetic table on Jubail.
+
+### 2026-10-06 00:30 — E5 partial + anchor recording
+- record_anchor 18666150 done (34 min): supernet anchor @h10, 5 eps/task, ep-offset 100: SR 0.795 (standalone
+  default @h10 on bench seeds: 0.850). 724 MB visited states in `outputs/bench_sn/visited`.
+- E5 standalone (30k steps each), search-val 400 eps:
+  v12-e4-stretch-f1-t16-s4-h5 0.853 | v16-e8-top-f1-t16-s4-h5 0.840 | v12-e8-top-f0.75-t64-s2-h5 0.835 |
+  v16-e12-top-f0.5-t16-s2-h25 0.828 | v8-e12-stretch-f0.75-t64-s2-h50 0.690 | default h50/h10 0.713/0.850.
+  -> much smaller networks match the default once the execution horizon is short; h50 dominates failures.
+- E2 bench g0-g4 running since 00:06-00:25 (backfill); g5-g9 est. 03:00-08:30; proxies est. 11:00.
