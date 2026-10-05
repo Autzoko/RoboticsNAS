@@ -11,7 +11,8 @@
 source /etc/profile
 set -euo pipefail
 module purge
-module load miniconda-nobashrc/3-4.11.0
+module load miniconda-nobashrc/3-4.11.0 gcc/11.5.0
+export CC=gcc CXX=g++
 
 ROOT=/scratch/ll5582/RoboticsNAS
 ENV=$ROOT/env
