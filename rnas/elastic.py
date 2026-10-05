@@ -98,6 +98,23 @@ class ElasticSmolVLA(nn.Module):
         finally:
             self.vwe.embed_image = orig
 
+    @contextlib.contextmanager
+    def image_cache(self):
+        """Memoize the frozen SigLIP+connector output per image tensor within a step (vtok variants share it)."""
+        orig, memo = self.vwe.embed_image, {}
+
+        def cached(img):
+            k = (img.data_ptr(), tuple(img.shape))
+            if k not in memo:
+                memo[k] = orig(img)
+            return memo[k]
+
+        self.vwe.embed_image = cached
+        try:
+            yield
+        finally:
+            self.vwe.embed_image = orig
+
     def _attend(self, mask: Tensor, q: Tensor, k: Tensor, v: Tensor) -> Tensor:
         return self.vwe.eager_attention_forward(mask, q.shape[0], self.head_dim, q, k, v)
 

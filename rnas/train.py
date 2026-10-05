@@ -43,9 +43,10 @@ def flow_losses(model, batch, archs: list[Arch], kd_weight: float, noise=None, t
     x_t = t[:, None, None] * noise + (1 - t[:, None, None]) * actions
     u_t = noise - actions
     prefixes = {}
-    for vt in sorted({a.vtok for a in archs}):
-        n = max(a.vlm_layers_needed() for a in archs if a.vtok == vt)
-        prefixes[vt] = model.prefix_kv(images, img_masks, lt, lm, state, vt, n)
+    with model.image_cache():
+        for vt in sorted({a.vtok for a in archs}):
+            n = max(a.vlm_layers_needed() for a in archs if a.vtok == vt)
+            prefixes[vt] = model.prefix_kv(images, img_masks, lt, lm, state, vt, n)
     out, teacher = [], None
     for i, a in enumerate(archs):
         kvs, pad = prefixes[a.vtok]
