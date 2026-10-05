@@ -124,3 +124,4 @@ E5 evals auto-launched as standalone runs finish (`scripts/e5_watch.sh`).
 - 01:30: bench g6 (18666158, cn015) hung after 3 rows (env workers idle, GPU 0%) -> added reset/step timeouts
   (600/300 s) with worker recreation + up to 3 retries per (arch, task) to `rnas/rollout.py`; g6 cancelled and
   resubmitted as 18668036 (resumes; finished rows are skipped). Other groups at ~2.2 h/group pace.
+- 02:20: g9 on cn015 very slow (up to 249 s per arch-task vs ~20 s) -> cancelled, resubmitted excluding cn015 (g9r); g6r also excludes cn015.
