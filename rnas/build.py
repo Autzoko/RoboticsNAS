@@ -81,10 +81,13 @@ def trainable_state_dict(model: ElasticSmolVLA, names: set | None = None) -> dic
 
 def load_trainable(model: ElasticSmolVLA, path: str) -> dict:
     ck = torch.load(path, map_location="cpu", weights_only=False)
+    if "depth_gain" in ck["model"] and model.depth_gain is None:
+        model.enable_depth_gain()
     missing, unexpected = model.load_state_dict(ck["model"], strict=False)
     assert not unexpected, unexpected
     trainable = {n for n, p in model.named_parameters() if p.requires_grad}
-    assert not (trainable & set(missing)), sorted(trainable & set(missing))[:5]
+    missing_tr = {n for n in trainable & set(missing) if n != "depth_gain"}  # gains may be newly enabled (init 1)
+    assert not missing_tr, sorted(missing_tr)[:5]
     return ck
 
 

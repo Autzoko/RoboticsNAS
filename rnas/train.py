@@ -20,7 +20,7 @@ from torch.utils.data import DataLoader, DistributedSampler
 
 from .build import build_elastic, load_trainable, make_processors, setup_env_vars, trainable_state_dict
 from .data import make_dataset
-from .space import DEFAULT, SMALLEST_NET, Arch, sample_net
+from .space import DEFAULT, SMALLEST_NET, Arch, sample_net, sample_net_depth_balanced
 
 ACT_DIM = 7
 
@@ -31,7 +31,11 @@ def masked_mse(a, b, is_pad):
     return (err * valid).sum() / (valid.sum() * ACT_DIM).clamp_min(1)
 
 
-def flow_losses(model, batch, archs: list[Arch], kd_weight: float, noise=None, t=None):
+def same_depth_teacher(a: Arch) -> Arch:
+    return Arch(16, a.n_exp, "stretch", 1.0, 64)
+
+
+def flow_losses(model, batch, archs: list[Arch], kd_weight: float, noise=None, t=None, kd_mode: str = "anchor"):
     """Shared prefix (per vtok) + shared noise/time; first arch is the distillation teacher if kd_weight>0."""
     images, img_masks, lt, lm, state = model.prepare(batch)
     actions = model.policy.prepare_action(batch)
@@ -42,23 +46,49 @@ def flow_losses(model, batch, archs: list[Arch], kd_weight: float, noise=None, t
         t = model.m.sample_time(actions.shape[0], actions.device)
     x_t = t[:, None, None] * noise + (1 - t[:, None, None]) * actions
     u_t = noise - actions
+    teachers = {same_depth_teacher(a) for a in archs} if (kd_mode == "same_depth" and kd_weight > 0) else set()
     prefixes = {}
     with model.image_cache():
-        for vt in sorted({a.vtok for a in archs}):
-            n = max(a.vlm_layers_needed() for a in archs if a.vtok == vt)
+        for vt in sorted({a.vtok for a in archs} | {b.vtok for b in teachers}):
+            n = max(a.vlm_layers_needed() for a in list(archs) + list(teachers) if a.vtok == vt)
             prefixes[vt] = model.prefix_kv(images, img_masks, lt, lm, state, vt, n)
+    tv = {}
+    with torch.no_grad():
+        for b in teachers:
+            tv[b] = model.velocity(*prefixes[b.vtok], x_t, t, b).detach()
     out, teacher = [], None
     for i, a in enumerate(archs):
         kvs, pad = prefixes[a.vtok]
         v = model.velocity(kvs, pad, x_t, t, a)
         fm = masked_mse(v.float(), u_t, is_pad)
         kd = None
-        if i == 0:
+        if kd_mode == "same_depth" and kd_weight > 0:
+            b = same_depth_teacher(a)
+            if b != a:
+                kd = masked_mse(v.float(), tv[b].float(), is_pad)
+        elif i == 0:
             teacher = v.detach()
         elif kd_weight > 0:
             kd = masked_mse(v.float(), teacher.float(), is_pad)
         out.append((a, fm, kd))
     return out
+
+
+def pcgrad(losses, params):
+    """PCGrad (Yu et al. 2020) over subnet losses on the given params; returns summed projected grads."""
+    flat = []
+    for L in losses:
+        gs = torch.autograd.grad(L, params, retain_graph=True, allow_unused=True)
+        flat.append(torch.cat([(g if g is not None else torch.zeros_like(p)).reshape(-1) for g, p in zip(gs, params)]))
+    proj = [g.clone() for g in flat]
+    for i in range(len(proj)):
+        for j in torch.randperm(len(flat)).tolist():
+            if j == i:
+                continue
+            d = torch.dot(proj[i], flat[j])
+            if d < 0:
+                proj[i] -= d / (flat[j].norm() ** 2 + 1e-12) * flat[j]
+    return torch.stack(proj).sum(0)
 
 
 def lr_at(step, peak, warmup, total, final):
@@ -86,6 +116,10 @@ def main():
     ap.add_argument("--val-every", type=int, default=2000)
     ap.add_argument("--log-every", type=int, default=50)
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--depth-gain", action="store_true", help="M2-V1 per-depth norm gains")
+    ap.add_argument("--sampler", choices=["config", "depth"], default="config", help="M2-V2 depth-balanced")
+    ap.add_argument("--kd", choices=["anchor", "same_depth"], default="anchor", help="M2-V2 same-depth teacher")
+    ap.add_argument("--pcgrad", action="store_true", help="M2-V3 conflict projection across subnets")
     ap.add_argument("--trainable", choices=["all", "readout"], default="all",
                     help="readout = only expert final norm + action_out_proj (S0 readout probe)")
     ap.add_argument("--split", default="configs/split.json")
@@ -110,6 +144,8 @@ def main():
 
     model = build_elastic("cuda")
     pre, _ = make_processors(model, args.stats)
+    if args.depth_gain:
+        model.enable_depth_gain()
     if args.init:
         load_trainable(model, args.init)
     save_names = {n for n, p in model.named_parameters() if p.requires_grad}  # full expert set in ckpts
@@ -158,16 +194,26 @@ def main():
                 break
             batch = pre(batch)
             if args.mode == "supernet":
-                archs = [DEFAULT, SMALLEST_NET] + [sample_net(rng) for _ in range(args.n_random)]
+                samp = sample_net_depth_balanced if args.sampler == "depth" else sample_net
+                archs = [DEFAULT, SMALLEST_NET] + [samp(rng) for _ in range(args.n_random)]
             else:
                 archs = [fixed]
             for g in opt.param_groups:
                 g["lr"] = lr_at(step, args.lr, args.warmup, args.steps, args.lr_final)
             with torch.autocast("cuda", dtype=torch.bfloat16):
-                res = flow_losses(model, batch, archs, args.kd_weight if args.mode == "supernet" else 0.0)
-            loss = sum(fm + (args.kd_weight * kd if kd is not None else 0.0) for _, fm, kd in res)
+                res = flow_losses(model, batch, archs, args.kd_weight if args.mode == "supernet" else 0.0,
+                                  kd_mode=args.kd)
+            per = [fm + (args.kd_weight * kd if kd is not None else 0.0) for _, fm, kd in res]
+            loss = sum(per)
             opt.zero_grad(set_to_none=True)
-            loss.backward()
+            if args.pcgrad and len(per) > 1:
+                g = pcgrad(per, params)
+                off = 0
+                for p in params:
+                    p.grad = g[off : off + p.numel()].view_as(p).clone()
+                    off += p.numel()
+            else:
+                loss.backward()
             if ddp:  # data-parallel by hand: identical init on all ranks, one flat all-reduce of grads
                 gs = [p.grad if p.grad is not None else torch.zeros_like(p) for p in params]
                 flat = torch.cat([g.reshape(-1) for g in gs])

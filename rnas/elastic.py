@@ -26,7 +26,7 @@ from torch import Tensor, nn
 from lerobot.policies.common.vla_utils import make_att_2d_masks
 from lerobot.policies.smolvla.smolvlm_with_expert import apply_rope
 
-from .space import MAX_VLM, Arch
+from .space import MAX_EXP, MAX_VLM, N_EXP, Arch
 
 
 def pool_tokens(x: Tensor, n_out: int) -> Tensor:
@@ -84,6 +84,17 @@ class ElasticSmolVLA(nn.Module):
         self.sa_every = self.vwe.self_attn_every_n_layers
         self.head_dim = self.vwe.vlm.config.text_config.head_dim
         self.chunk = self.m.config.chunk_size
+        self.depth_gain = None  # M2-V1: per-depth multiplicative gains on expert RMSNorm outputs (enable_depth_gain)
+
+    def enable_depth_gain(self):
+        hid = self.exp_layers[0].input_layernorm.weight.shape[0]
+        dev = self.exp_layers[0].input_layernorm.weight.device
+        self.depth_gain = nn.Parameter(torch.ones(len(N_EXP), MAX_EXP, 2, hid, device=dev))
+
+    def _gain(self, arch: Arch, j: int, which: int):
+        if self.depth_gain is None:
+            return None
+        return self.depth_gain[N_EXP.index(arch.n_exp), j, which]
 
     # ------------------------------------------------------------------ prefix
     @contextlib.contextmanager
@@ -155,7 +166,11 @@ class ElasticSmolVLA(nn.Module):
         for j in range(arch.n_exp):
             layer = self.exp_layers[j]
             kp, vp = kvs[bmap[j]]
-            x = layer.input_layernorm(h).to(dtype=layer.self_attn.q_proj.weight.dtype)
+            x = layer.input_layernorm(h)
+            g = self._gain(arch, j, 0)
+            if g is not None:
+                x = x * g
+            x = x.to(dtype=layer.self_attn.q_proj.weight.dtype)
             shp = (*x.shape[:-1], -1, self.head_dim)
             q = layer.self_attn.q_proj(x).view(shp)
             if self.sa_every > 0 and j % self.sa_every == 0:
@@ -173,7 +188,11 @@ class ElasticSmolVLA(nn.Module):
                 att_out = self._attend(prefix_2d, q, k, v)
             att_out = att_out.to(layer.self_attn.o_proj.weight.dtype)
             out = layer.self_attn.o_proj(att_out) + h
-            h = out + elastic_mlp(layer.mlp, layer.post_attention_layernorm(out), arch.ffn)
+            y = layer.post_attention_layernorm(out)
+            g = self._gain(arch, j, 1)
+            if g is not None:
+                y = y * g
+            h = out + elastic_mlp(layer.mlp, y, arch.ffn)
         h = self.vwe.lm_expert.norm(h)
         return self.m.action_out_proj(h[:, -self.chunk :].to(torch.float32))
 

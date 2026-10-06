@@ -95,6 +95,15 @@ def sample_net(rng: random.Random) -> Arch:
             return a
 
 
+def sample_net_depth_balanced(rng: random.Random) -> Arch:
+    """Uniform over expert depth first, then uniform over the remaining valid axes."""
+    e = rng.choice(N_EXP)
+    while True:
+        a = Arch(rng.choice(N_VLM), e, rng.choice(BRIDGE), rng.choice(FFN), rng.choice(VTOK))
+        if a.is_valid():
+            return a
+
+
 def sample_arch(rng: random.Random) -> Arch:
     a = sample_net(rng)
     return Arch(*a.net, steps=rng.choice(STEPS), horizon=rng.choice(HORIZON))
