@@ -217,3 +217,7 @@ Test-set accessed only for the 6 frozen candidates (+3 resumed halves after node
 - S4 prep (pi0): `lerobot/pi0_base` = PI base model; HF card and openpi do not list the pretraining mixture. The pi0
   paper describes it as PI cross-embodiment data + an OXE subset (OXE has no LIBERO). Plan: use pi0_base, document
   this, and add a leakage-free control initialised from PaliGemma only (no robot pretraining) for the main comparison.
+- 11:40: per user request (run step by step, don't flood the queue): cancelled all pending S1 jobs (26). Kept S0
+  (5 jobs) and the running S1 eval of v16-e12 at s2-h10; v16-e16 s2-h10 eval already finished. Remaining S1
+  (6 existing-net evals, 8 trainings + evals) will be resubmitted in small stages after S0 is analysed.
+  Working rule from now on: at most ~4 GPU jobs in the queue at a time.
