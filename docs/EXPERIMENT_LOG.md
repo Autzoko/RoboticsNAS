@@ -197,3 +197,9 @@ v24-e16-top .767/.695/.853 (v16-e12-top pending). ft5k closes ~half the weight-s
 lag standalone; rank agreement weak (tau ~.29, n=7). Key limitation of supernet VLA-NAS -> reported as such.
 Frozen 6 test candidates (see file) before any test access. nas_valloss net (v16-e8-stretch-f1-t16) needs ft5k first.
 - 09:20: 3 test halves stalled (>35 min no rows; cn016 x2, cn012) -> cancelled, resubmitted excluding cn012/cn016 (18672285-87), resuming finished rows. Same frozen candidates/ckpts.
+
+### 2026-10-06 10:50 — E4 FINAL (official LIBERO test, 2000 eps each; `results/e4.md`)
+published 0.674 [.653,.694] | tuned schedule (standalone) 0.810 | **ours 0.821 [.803,.837]** | random 0.662 |
+val-loss NAS 0.701 | standalone small v12-e4-t16-s4-h5 0.823 (85 ms/call). Ours: +14.7 pts, 3.1x lower call latency.
+E5b final: ft5k v16-e12-top-f0.5-t16-s2-h25 = 0.835 (standalone 0.828, supernet 0.748).
+Test-set accessed only for the 6 frozen candidates (+3 resumed halves after node stalls).
