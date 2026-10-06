@@ -149,3 +149,13 @@ v8-e12 0.458/0.690 | v12-e4 0.450/0.853 | v24-e4-top 0.085/0.640 | v24-e16-top 0
 Gap grows as the expert gets shallower: supernet strongly under-rates e4 subnets; standalone SR is flat (0.64-0.85).
 E5b: fine-tune each E5 arch from supernet 5k steps (lr 5e-5, 1/6 of standalone cost) + eval
 (jobs 18671599-614, dependent evals) to test whether cheap fine-tuning restores standalone SR/ranking.
+
+### 2026-10-06 06:20 — E2 FINAL (111 archs x 400 eps = 44,400 episodes), E5 FINAL
+Files: `results/e2/proxy_correlations.md`, `results/e2/bench_table.csv`, `results/e2/factors.md`, `results/e5/e5.md`.
+- Split-half ceiling Kendall 0.840. fm_loss **0.165 [0.005,0.330], top-10 0/10**; kd_offline 0.756 (8/10);
+  kd_onpolicy 0.738 (8/10); cl_1ep 0.775; cl_2ep 0.819; act_l1_exec 0.667; latency/params uninformative or inverse.
+- RQ4 (supernet weights): n_exp dominates (dR2 .40, likely weight-sharing artifact), steps 2>4>10, vtok 16~64,
+  stretch > top, horizon 10-25 best.
+- E5: supernet-inherited vs standalone Kendall 0.255 (n=8), mean gap +0.212 -> weight sharing distorts the
+  deployment-relevant ranking (shallow experts most). Motivates fine-tune-after-search (E5b running).
+- Hangs: g5/g6/g9 stalls on cn014/cn015 -> restarted with env timeouts (rows resumed, no data lost).
