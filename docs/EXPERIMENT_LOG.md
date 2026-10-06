@@ -240,3 +240,4 @@ Test-set accessed only for the 6 frozen candidates (+3 resumed halves after node
 - 16:42: S1 v8-e12-stretch-f0.75-t64 @s2-h10 = 0.823. Submitted v12-e4-stretch-f1-t16 @s2-h10 (only job).
 - 17:24: S1 v12-e4-stretch-f1-t16 @s2-h10 = **0.880** (best so far; default net 0.843). Added scripts/s1_next.sh (one-job driver). Submitted v16-e8-top-f1-t16 @s2-h10 (only job).
 - 18:36: S1 v16-e8-top-f1-t16 @s2-h10 = 0.863. Submitted v12-e8-top-f0.75-t64 @s2-h10 (only job).
+- 20:03: S1 v12-e8-top-f0.75-t64 @s2-h10 = 0.818. Submitted v24-e4-top-f0.75-t64 @s2-h10 (only job).
