@@ -230,3 +230,4 @@ Test-set accessed only for the 6 frozen candidates (+3 resumed halves after node
   the readout; e4 remains far from its optimum. Suggests per-depth adaptation of shared layers / conflict-aware
   updates (V3) over per-depth readout only (V1). Readout probe still run to confirm. Submitted s0_ro v12-e4 (only job).
 - 13:46: readout probe 18677115 failed at start (param-name filter matched nothing -> empty optimizer; no GPU time used). Fixed filter + assert; resubmitted as 18677795 (only job).
+- 14:36: readout probe v12-e4 trained (0.024M params, 5k steps): offline val fm 0.478 (full ft5k 0.472). Submitted its closed-loop eval (only job).
