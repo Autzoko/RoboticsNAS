@@ -7,6 +7,12 @@ Every final-test (official LIBERO init states) run must be listed in the "Test-s
 
 | date | policy / arch | ckpt | job | note |
 |---|---|---|---|---|
+| 2026-10-06 07:06 | smolvla_default_published / v16-e16-stretch-f1-t64-s10-h50 | fixed_default/final.pt | 18671894-905 | E4 final, frozen @186b175 |
+| 2026-10-06 07:06 | smolvla_default_tuned_schedule / v16-e16-stretch-f1-t64-s2-h10 | fixed_default/final.pt | " | " |
+| 2026-10-06 07:06 | ours_proxySH_kd_cap / v16-e16-stretch-f1-t64-s2-h10 | ft5k/default | " | " |
+| 2026-10-06 07:06 | random_search_cap_ft5k / v16-e16-stretch-f1-t64-s10-h50 | ft5k/default | " | " |
+| 2026-10-06 07:06 | nas_valloss_top1_cap / v16-e8-stretch-f1-t16-s4-h50 | ft5k/v16-e8-stretch-f1-t16-s4-h50 | " (after ft) | " |
+| 2026-10-06 07:06 | standalone_race_best_small / v12-e4-stretch-f1-t16-s4-h5 | standalone/v12-e4 | " | " |
 
 ## Log
 
