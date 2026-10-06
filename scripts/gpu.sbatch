@@ -1,6 +1,7 @@
 #!/bin/bash
 #SBATCH --partition=nvidia
 #SBATCH --gres=gpu:a100:1
+#SBATCH --exclude=cn014,cn015,cn270
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=110G
 #SBATCH --time=12:00:00

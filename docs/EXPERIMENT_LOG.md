@@ -172,3 +172,4 @@ Regret (held-out SR of best eligible arch minus chosen), latency cap <= median m
 | proxy_top1[fm_loss] (0 eps) | 0.210 | - | - | - |
 No cap, B=400: proxy_sh[kd] 0.053-0.058, proxy_sh[act_l1_exec] 0.051, sh 0.086-0.098, fm-guided 0.126-0.130,
 random 0.181; proxy_top1[kd_onpolicy] 0.045 (single deterministic pick).
+- 06:18: ev_ft v16-e12 (18671601) died on cn270: env worker EOFError at first reset x3 (EGL on condo H100 NVL node). Resubmitted excluding cn014/cn015/cn270. Exclude these nodes for all sim jobs.
