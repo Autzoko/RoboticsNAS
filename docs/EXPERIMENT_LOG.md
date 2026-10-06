@@ -196,3 +196,4 @@ v12-e4 .680/.450/.853 | v16-e8-top .752/.665/.840 | v12-e8-top .800/.762/.835 | 
 v24-e16-top .767/.695/.853 (v16-e12-top pending). ft5k closes ~half the weight-sharing gap; shallow experts still
 lag standalone; rank agreement weak (tau ~.29, n=7). Key limitation of supernet VLA-NAS -> reported as such.
 Frozen 6 test candidates (see file) before any test access. nas_valloss net (v16-e8-stretch-f1-t16) needs ft5k first.
+- 09:20: 3 test halves stalled (>35 min no rows; cn016 x2, cn012) -> cancelled, resubmitted excluding cn012/cn016 (18672285-87), resuming finished rows. Same frozen candidates/ckpts.
