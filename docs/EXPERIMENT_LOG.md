@@ -221,3 +221,4 @@ Test-set accessed only for the 6 frozen candidates (+3 resumed halves after node
   (5 jobs) and the running S1 eval of v16-e12 at s2-h10; v16-e16 s2-h10 eval already finished. Remaining S1
   (6 existing-net evals, 8 trainings + evals) will be resubmitted in small stages after S0 is analysed.
   Working rule from now on: at most ~4 GPU jobs in the queue at a time.
+- 11:53: per user, keep only ONE RoboticsNAS job in the queue: cancelled the 5 S0 jobs; only s1ev v16-e12 (18674352, running) remains. Next jobs submitted one at a time (S0 grad-conflict first).
