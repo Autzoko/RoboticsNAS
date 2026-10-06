@@ -142,3 +142,10 @@ cl_1ep 0.745 6/10 | act_l1_exec 0.646 4/10 | act_l1 0.491 | self_cons 0.430 | gr
 -> standard NAS val loss fails; anchor-agreement (KD) proxies ~ 2-episode closed loop at zero rollouts;
    on-policy states give no gain over offline states for KD (honest negative).
 Proxies job 18666151 done (111 archs); all 7 E5 evals done.
+
+### 2026-10-06 05:00 — E5 (partial) weight-sharing gap; E5b launched
+supernet-inherited vs standalone-30k SR (same seeds): default h50 0.693/0.713 | v16-e12-top 0.748/0.828 |
+v8-e12 0.458/0.690 | v12-e4 0.450/0.853 | v24-e4-top 0.085/0.640 | v24-e16-top 0.695/0.853 (2 pending).
+Gap grows as the expert gets shallower: supernet strongly under-rates e4 subnets; standalone SR is flat (0.64-0.85).
+E5b: fine-tune each E5 arch from supernet 5k steps (lr 5e-5, 1/6 of standalone cost) + eval
+(jobs 18671599-614, dependent evals) to test whether cheap fine-tuning restores standalone SR/ranking.
