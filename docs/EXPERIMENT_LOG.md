@@ -253,3 +253,4 @@ Test-set accessed only for the 6 frozen candidates (+3 resumed halves after node
   the e16 anchor), `--pcgrad` (V3: PCGrad over subnet losses). S2 plan: V0 (= v1 supernet) and each variant evaluated
   on the 16 S1 keys in one job each; metric = Kendall vs standalone S1 SR.
 - 07-10 ~01:55: S1 training v8-e4-stretch-f0.5-t64 done (30k). Submitted its eval @s2-h10 (only job).
+- 02:40: S1 new net v8-e4-stretch-f0.5-t64 @s2-h10 = 0.833 (9/16 done). Submitted training v12-e4-top-f0.75-t16 (only job).
