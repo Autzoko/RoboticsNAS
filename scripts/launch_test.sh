@@ -11,7 +11,7 @@ assert any(x["name"] == sys.argv[1] and x["arch"] == sys.argv[2] for x in c["can
 PY
 mkdir -p outputs/test/$NAME
 for OFF in 0 25; do
-  sbatch -J test_${NAME}_$OFF --time=1-00:00:00 --export=ALL,RNAS_ALLOW_TEST=1 scripts/gpu.sbatch rnas.rollout \
+  sbatch -J test_${NAME}_$OFF ${DEP:+--dependency=$DEP} --gres=gpu:1 --constraint="a100|h100|h200" --time=10:00:00 --export=ALL,RNAS_ALLOW_TEST=1 scripts/gpu.sbatch rnas.rollout \
     --ckpt $CKPT --archs $ARCH --mode test --n-eps 25 --ep-offset $OFF --out outputs/test/$NAME/rollouts_$OFF.jsonl
 done
 echo "$(date -Is) $NAME $ARCH $CKPT" >> outputs/test/ACCESS_LOG.txt
