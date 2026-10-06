@@ -114,11 +114,12 @@ def main():
         load_trainable(model, args.init)
     save_names = {n for n, p in model.named_parameters() if p.requires_grad}  # full expert set in ckpts
     if args.trainable == "readout":
-        keep = ("vwe.lm_expert.norm.", "m.action_out_proj.")
+        keep = ("lm_expert.norm.", "action_out_proj.")
         for n, p in model.named_parameters():
             if p.requires_grad and not any(k in n for k in keep):
                 p.requires_grad = False
     params = [p for p in model.parameters() if p.requires_grad]
+    assert params, "no trainable parameters"
     print(f"trainable params: {sum(p.numel() for p in params) / 1e6:.3f} M", flush=True)
     opt = torch.optim.AdamW(params, lr=args.lr, betas=(0.9, 0.95), eps=1e-8, weight_decay=1e-10)
     step = 0
