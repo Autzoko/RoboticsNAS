@@ -1,0 +1,13 @@
+{
+  "note": "Frozen before any official-test access. Selections use search-val data only (E2 table, E5 standalone search-val). Test = official LIBERO init states, 50 per task x 40 tasks.",
+  "latency_cap_ms_per_step": 12.05,
+  "candidates": [
+    {"name": "smolvla_default_published", "arch": "v16-e16-stretch-f1-t64-s10-h50", "ckpt": "outputs/fixed_default/final.pt", "why": "SmolVLA architecture + default inference (10 steps, execute full 50-step chunk), standalone 30k"},
+    {"name": "smolvla_default_tuned_schedule", "arch": "v16-e16-stretch-f1-t64-s2-h10", "ckpt": "outputs/fixed_default/final.pt", "why": "best schedule for the default net on search-val (closed-loop knob search), standalone 30k"},
+    {"name": "ours_proxySH_kd_cap", "arch": "v16-e16-stretch-f1-t64-s2-h10", "ckpt": "outputs/ft5k/v16-e16-stretch-f1-t64-s10-h50/final.pt", "why": "closed-loop-aware search (KD proxy shortlist + paired successive halving, 1600 eps, cap) on supernet, then 5k fine-tune"},
+    {"name": "random_search_cap_ft5k", "arch": "v16-e16-stretch-f1-t64-s10-h50", "ckpt": "outputs/ft5k/v16-e16-stretch-f1-t64-s10-h50/final.pt", "why": "random search pick (1600 eps, cap) = default arch/schedule, 5k fine-tune from supernet"},
+    {"name": "nas_valloss_top1_cap", "arch": "v16-e8-stretch-f1-t16-s4-h50", "ckpt": "outputs/ft5k/v16-e8-stretch-f1-t16-s4-h50/final.pt", "why": "standard NAS: best supernet offline flow-matching val loss under cap, 5k fine-tune"},
+    {"name": "standalone_race_best_small", "arch": "v12-e4-stretch-f1-t16-s4-h5", "ckpt": "outputs/standalone/v12-e4-stretch-f1-t16-s4-h5/final.pt", "why": "best search-val SR among pre-registered standalone E5 archs (tie 0.853 with v24-e16-top; smaller/faster chosen)"}
+  ],
+  "dropped": "no-cap variants of each method (compute); they are reported on search-val only"
+}

@@ -183,3 +183,10 @@ Issue: supernet bias (E5) + KD-to-anchor bias -> search returns the anchor netwo
 surface small nets that are competitive when trained properly (standalone v12-e4 .853). Freeze deferred until E5b
 (fine-tune 5k from supernet) shows whether cheap fine-tuning restores standalone-level SR -> then a
 shortlist -> ft5k -> closed-loop race stage.
+
+### 2026-10-06 07:10 — E5b result; FINAL CANDIDATES FROZEN (`results/final_candidates.json`)
+ft5k (5k steps from supernet) vs supernet vs standalone-30k SR: default h50 .723/.693/.713 | v8-e12 .748/.458/.690 |
+v12-e4 .680/.450/.853 | v16-e8-top .752/.665/.840 | v12-e8-top .800/.762/.835 | v24-e4-top .352/.085/.640 |
+v24-e16-top .767/.695/.853 (v16-e12-top pending). ft5k closes ~half the weight-sharing gap; shallow experts still
+lag standalone; rank agreement weak (tau ~.29, n=7). Key limitation of supernet VLA-NAS -> reported as such.
+Frozen 6 test candidates (see file) before any test access. nas_valloss net (v16-e8-stretch-f1-t16) needs ft5k first.
