@@ -74,8 +74,8 @@ def make_processors(model: ElasticSmolVLA, stats_path: str):
     return make_smolvla_pre_post_processors(model.policy.config, dataset_stats=load_stats_tensors(stats_path))
 
 
-def trainable_state_dict(model: ElasticSmolVLA) -> dict:
-    names = {n for n, p in model.named_parameters() if p.requires_grad}
+def trainable_state_dict(model: ElasticSmolVLA, names: set | None = None) -> dict:
+    names = names or {n for n, p in model.named_parameters() if p.requires_grad}
     return {k: v.detach().cpu() for k, v in model.state_dict().items() if k in names}
 
 

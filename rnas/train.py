@@ -86,6 +86,8 @@ def main():
     ap.add_argument("--val-every", type=int, default=2000)
     ap.add_argument("--log-every", type=int, default=50)
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--trainable", choices=["all", "readout"], default="all",
+                    help="readout = only expert final norm + action_out_proj (S0 readout probe)")
     ap.add_argument("--split", default="configs/split.json")
     ap.add_argument("--stats", default="configs/train_stats.json")
     args = ap.parse_args()
@@ -110,7 +112,14 @@ def main():
     pre, _ = make_processors(model, args.stats)
     if args.init:
         load_trainable(model, args.init)
+    save_names = {n for n, p in model.named_parameters() if p.requires_grad}  # full expert set in ckpts
+    if args.trainable == "readout":
+        keep = ("vwe.lm_expert.norm.", "m.action_out_proj.")
+        for n, p in model.named_parameters():
+            if p.requires_grad and not any(k in n for k in keep):
+                p.requires_grad = False
     params = [p for p in model.parameters() if p.requires_grad]
+    print(f"trainable params: {sum(p.numel() for p in params) / 1e6:.3f} M", flush=True)
     opt = torch.optim.AdamW(params, lr=args.lr, betas=(0.9, 0.95), eps=1e-8, weight_decay=1e-10)
     step = 0
     if (out / "last.pt").exists():
@@ -204,7 +213,7 @@ def main():
                 print(vals, flush=True)
                 model.train()
             if rank == 0 and (step % args.save_every == 0 or step == args.steps):
-                ck = {"model": trainable_state_dict(model), "opt": opt.state_dict(), "step": step,
+                ck = {"model": trainable_state_dict(model, save_names), "opt": opt.state_dict(), "step": step,
                       "rng": rng.getstate(), "args": vars(args)}
                 torch.save(ck, out / "last.tmp")
                 os.replace(out / "last.tmp", out / "last.pt")
@@ -212,7 +221,7 @@ def main():
                     torch.save({"model": ck["model"], "step": step}, out / f"step{step // 1000}k.pt")
         epoch += 1
     if rank == 0:
-        torch.save({"model": trainable_state_dict(model), "step": step, "args": vars(args)}, out / "final.pt")
+        torch.save({"model": trainable_state_dict(model, save_names), "step": step, "args": vars(args)}, out / "final.pt")
     if ddp:
         dist.destroy_process_group()
 
