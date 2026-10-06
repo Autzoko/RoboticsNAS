@@ -223,3 +223,9 @@ Test-set accessed only for the 6 frozen candidates (+3 resumed halves after node
   Working rule from now on: at most ~4 GPU jobs in the queue at a time.
 - 11:53: per user, keep only ONE RoboticsNAS job in the queue: cancelled the 5 S0 jobs; only s1ev v16-e12 (18674352, running) remains. Next jobs submitted one at a time (S0 grad-conflict first).
 - 12:23: S1 standalone @s2-h10 (search-val 400 eps): v16-e16 (default) 0.843, v16-e12-top-f0.5-t16 0.875. Submitted s0_gradconf (only job).
+- 12:54: S0 gradient conflict (v1 supernet; 16 batches; arch v16-e{4,8,12,16}-stretch-f1-t64; `outputs/s0/grad_conflict.json`):
+  cosine on shared expert layers 0-3: e4-e8 .28, e4-e12 .21, **e4-e16 .17**, e8-e12 .28, e8-e16 .27, e12-e16 .46;
+  readout: .52-.69. Shared-layer grad norm e4 .27 > e8 .19 > e12 .17 > e16 .13.
+  -> conflict is mainly in the shared trunk (early layers must be "final" for e4 and "intermediate" for e16), not
+  the readout; e4 remains far from its optimum. Suggests per-depth adaptation of shared layers / conflict-aware
+  updates (V3) over per-depth readout only (V1). Readout probe still run to confirm. Submitted s0_ro v12-e4 (only job).
