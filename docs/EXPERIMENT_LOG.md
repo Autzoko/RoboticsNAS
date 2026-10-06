@@ -242,3 +242,8 @@ Test-set accessed only for the 6 frozen candidates (+3 resumed halves after node
 - 18:36: S1 v16-e8-top-f1-t16 @s2-h10 = 0.863. Submitted v12-e8-top-f0.75-t64 @s2-h10 (only job).
 - 20:03: S1 v12-e8-top-f0.75-t64 @s2-h10 = 0.818. Submitted v24-e4-top-f0.75-t64 @s2-h10 (only job).
 - 20:49: S1 v24-e4-top-f0.75-t64 @s2-h10 = 0.752. Submitted v24-e16-top-f0.5-t64 @s2-h10 (only job; last existing-net eval).
+- 21:35: S1 v24-e16-top-f0.5-t64 @s2-h10 = 0.863. **All 8 existing E5 nets evaluated @s2-h10** (standalone, 400 eps):
+  v12-e4-stretch-f1-t16 .880 | v16-e12-top-f0.5-t16 .875 | v16-e8-top-f1-t16 .863 | v24-e16-top-f0.5-t64 .863 |
+  v16-e16 default .843 | v8-e12-stretch-f0.75-t64 .823 | v12-e8-top-f0.75-t64 .818 | v24-e4-top-f0.75-t64 .752.
+  With a fixed good schedule, 5 of 7 smaller nets match/beat the default network. Submitted training of new net
+  v8-e4-stretch-f0.5-t64 (only job).
