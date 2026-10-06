@@ -252,3 +252,4 @@ Test-set accessed only for the 6 frozen candidates (+3 resumed halves after node
   `--kd same_depth` (V2: uniform over expert depth; KD teacher = v16-e<d>-stretch-f1-t64, i.e. same depth, instead of
   the e16 anchor), `--pcgrad` (V3: PCGrad over subnet losses). S2 plan: V0 (= v1 supernet) and each variant evaluated
   on the 16 S1 keys in one job each; metric = Kendall vs standalone S1 SR.
+- 07-10 ~01:55: S1 training v8-e4-stretch-f0.5-t64 done (30k). Submitted its eval @s2-h10 (only job).
