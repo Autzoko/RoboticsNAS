@@ -159,3 +159,16 @@ Files: `results/e2/proxy_correlations.md`, `results/e2/bench_table.csv`, `result
 - E5: supernet-inherited vs standalone Kendall 0.255 (n=8), mean gap +0.212 -> weight sharing distorts the
   deployment-relevant ranking (shallow experts most). Motivates fine-tune-after-search (E5b running).
 - Hangs: g5/g6/g9 stalls on cn014/cn015 -> restarted with env timeouts (rows resumed, no data lost).
+
+### 2026-10-06 06:45 — E3 search replay FINAL (`results/e3/replay.md`, 300 reps, held-out-half scoring)
+Regret (held-out SR of best eligible arch minus chosen), latency cap <= median ms/step:
+| method | B=400 | 800 | 1600 | 3200 |
+|---|---|---|---|---|
+| proxy_sh[kd_onpolicy] n8 | 0.024 | 0.009 | 0.001 | 0.000 |
+| proxy_sh[act_l1_exec] n8 | 0.035 | 0.013 | 0.001 | 0.000 |
+| sh n16 (no proxy) | 0.084 | 0.070 | 0.058 | 0.057 |
+| proxy_sh[fm_loss] n8 | 0.112 | 0.097 | 0.078 | 0.075 |
+| random_full | 0.178 | 0.123 | 0.086 | 0.052 |
+| proxy_top1[fm_loss] (0 eps) | 0.210 | - | - | - |
+No cap, B=400: proxy_sh[kd] 0.053-0.058, proxy_sh[act_l1_exec] 0.051, sh 0.086-0.098, fm-guided 0.126-0.130,
+random 0.181; proxy_top1[kd_onpolicy] 0.045 (single deterministic pick).
