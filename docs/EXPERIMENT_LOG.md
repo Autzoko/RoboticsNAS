@@ -133,3 +133,12 @@ E5 evals auto-launched as standalone runs finish (`scripts/e5_watch.sh`).
 - **Weight-sharing gap suspicion:** e4 subnets 0.21-0.49 under supernet weights vs standalone
   v12-e4-stretch-f1-t16-s4-h5 0.853 (E5). Shallow experts look under-trained by the sandwich rule -> E5 rank check and
   post-search fine-tuning are essential; report honestly.
+
+### 2026-10-06 04:05 — E2 interim with proxies (67 complete archs)
+Split-half ceiling Kendall 0.814. Kendall tau vs held-out SR [95% CI], top-10 overlap:
+sr_search 0.814 | cl_2ep 0.792 [.713,.858] 6/10 | kd_offline 0.755 [.679,.824] 8/10 | kd_onpolicy 0.754 8/10 |
+cl_1ep 0.745 6/10 | act_l1_exec 0.646 4/10 | act_l1 0.491 | self_cons 0.430 | grip_err 0.154 0/10 |
+**fm_loss 0.108 [-.096,.330] 2/10** | latency ~0 | expert params (bigger=better) 0.498.
+-> standard NAS val loss fails; anchor-agreement (KD) proxies ~ 2-episode closed loop at zero rollouts;
+   on-policy states give no gain over offline states for KD (honest negative).
+Proxies job 18666151 done (111 archs); all 7 E5 evals done.
