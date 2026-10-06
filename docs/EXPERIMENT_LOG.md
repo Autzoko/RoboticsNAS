@@ -173,3 +173,13 @@ Regret (held-out SR of best eligible arch minus chosen), latency cap <= median m
 No cap, B=400: proxy_sh[kd] 0.053-0.058, proxy_sh[act_l1_exec] 0.051, sh 0.086-0.098, fm-guided 0.126-0.130,
 random 0.181; proxy_top1[kd_onpolicy] 0.045 (single deterministic pick).
 - 06:18: ev_ft v16-e12 (18671601) died on cn270: env worker EOFError at first reset x3 (EGL on condo H100 NVL node). Resubmitted excluding cn014/cn015/cn270. Exclude these nodes for all sim jobs.
+
+### 2026-10-06 06:25 — Draft final selection (NOT frozen; `outputs/final_candidates.json` on HPC)
+Deterministic picks (budget 1600, full search-val table, seed 0), cap = median 12.05 ms/step:
+ours proxySH[kd] -> v16-e16-stretch-f1-t64-s2-h10 (SR .845) | val-loss top1 -> v16-e8-stretch-f1-t16-s4-h50 (.628) |
+random -> default s10-h50 (.693). No cap: ours -> v16-e16-s10-h5 (.793), val-loss -> v16-e8-f0.75-t16-s4-h5 (.748),
+random -> v16-e16-s2-h25 (.808). Default-net schedule-only tuning -> s2-h10.
+Issue: supernet bias (E5) + KD-to-anchor bias -> search returns the anchor network with a cheaper schedule; cannot
+surface small nets that are competitive when trained properly (standalone v12-e4 .853). Freeze deferred until E5b
+(fine-tune 5k from supernet) shows whether cheap fine-tuning restores standalone-level SR -> then a
+shortlist -> ft5k -> closed-loop race stage.
