@@ -157,8 +157,20 @@ def main():
             seeds = ([SEARCH_SEED_BASE + 1000 * gtask + e for e in eps] if args.mode == "search"
                      else [TEST_SEED] * len(eps))
             t0 = time.time()
-            venv = make_venv(suite, tid, eps, args.mode)
-            desc = venv.call("task_description")[0]
+            for attempt in range(3):  # env creation can hang on I/O (D-state workers) -> timeout + recreate
+                venv = make_venv(suite, tid, eps, args.mode)
+                try:
+                    venv.call_async("task_description")
+                    desc = venv.call_wait(timeout=RESET_TIMEOUT)[0]
+                    break
+                except Exception as e:  # noqa: BLE001
+                    print(f"[env-create retry {attempt}] {suite} t{tid}: {type(e).__name__}: {e}", flush=True)
+                    try:
+                        venv.close(terminate=True)
+                    except Exception:  # noqa: BLE001
+                        pass
+            else:
+                raise RuntimeError(f"{suite} t{tid}: env creation failed 3 times")
             t_env = time.time() - t0
             for ai, a in enumerate(todo):
                 rec = None
