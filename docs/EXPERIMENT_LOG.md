@@ -247,3 +247,8 @@ Test-set accessed only for the 6 frozen candidates (+3 resumed halves after node
   v16-e16 default .843 | v8-e12-stretch-f0.75-t64 .823 | v12-e8-top-f0.75-t64 .818 | v24-e4-top-f0.75-t64 .752.
   With a fixed good schedule, 5 of 7 smaller nets match/beat the default network. Submitted training of new net
   v8-e4-stretch-f0.5-t64 (only job).
+- 21:50: implemented M2 variants (no jobs yet): `--depth-gain` (V1: per-depth multiplicative gains on both expert
+  RMSNorm outputs per layer, 4x16x2x720 = 92k params, init 1 -> starts identical to v1), `--sampler depth` +
+  `--kd same_depth` (V2: uniform over expert depth; KD teacher = v16-e<d>-stretch-f1-t64, i.e. same depth, instead of
+  the e16 anchor), `--pcgrad` (V3: PCGrad over subnet losses). S2 plan: V0 (= v1 supernet) and each variant evaluated
+  on the 16 S1 keys in one job each; metric = Kendall vs standalone S1 SR.
