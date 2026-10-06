@@ -1,0 +1,23 @@
+{
+ "note": "S1 weight-sharing ground truth (pre-registered 2026-10-06 before any S1 result). 16 nets = 8 from E5 + 8 new (2 per expert depth, seed 2). All evaluated standalone at fixed schedule s2-h10 on search-val (400 eps).",
+ "existing_e5_nets": [
+  "v16-e16-stretch-f1-t64-s2-h10",
+  "v16-e12-top-f0.5-t16-s2-h10",
+  "v8-e12-stretch-f0.75-t64-s2-h10",
+  "v12-e4-stretch-f1-t16-s2-h10",
+  "v16-e8-top-f1-t16-s2-h10",
+  "v12-e8-top-f0.75-t64-s2-h10",
+  "v24-e4-top-f0.75-t64-s2-h10",
+  "v24-e16-top-f0.5-t64-s2-h10"
+ ],
+ "new_nets": [
+  "v8-e4-stretch-f0.5-t64-s2-h10",
+  "v12-e4-top-f0.75-t16-s2-h10",
+  "v24-e8-stretch-f1-t16-s2-h10",
+  "v20-e8-top-f1-t64-s2-h10",
+  "v24-e12-top-f1-t64-s2-h10",
+  "v16-e12-top-f0.75-t16-s2-h10",
+  "v24-e16-stretch-f0.5-t16-s2-h10",
+  "v8-e16-stretch-f0.75-t16-s2-h10"
+ ]
+}
