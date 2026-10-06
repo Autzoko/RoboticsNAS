@@ -236,3 +236,4 @@ Test-set accessed only for the 6 frozen candidates (+3 resumed halves after node
   gap; consistent with the gradient-conflict result (conflict in the shared trunk). Decision: skip the second readout
   probe (v24-e4); M2 will target trunk sharing (per-depth adaptation of shared layers / conflict-aware updates), not
   per-depth readouts. Next: S1 existing-net evals one by one; submitted v8-e12 @s2-h10 (only job).
+- 15:53: S1 eval v8-e12 (18679291) failed on cn273 (H100): env worker EOFError at first reset, same as cn270 -> EGL sim broken on H100 nodes (training OK). Rule: simulation jobs use --gres=gpu:a100:1 only. Resubmitted (only job).
