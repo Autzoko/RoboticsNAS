@@ -203,3 +203,17 @@ published 0.674 [.653,.694] | tuned schedule (standalone) 0.810 | **ours 0.821 [
 val-loss NAS 0.701 | standalone small v12-e4-t16-s4-h5 0.823 (85 ms/call). Ours: +14.7 pts, 3.1x lower call latency.
 E5b final: ft5k v16-e12-top-f0.5-t16-s2-h25 = 0.835 (standalone 0.828, supernet 0.748).
 Test-set accessed only for the 6 frozen candidates (+3 resumed halves after node stalls).
+
+## v2 (plan: `docs/PLAN_v2.md`; user decisions 2026-10-06: second family = pi0; no extra seed tests of v1)
+
+### 2026-10-06 11:30 — S1 + S0 launched
+- S1: 16 standalone nets pre-registered (`results/s1_archs.json`): 8 E5 nets + 8 new (2 per expert depth, seed 2),
+  all evaluated at fixed schedule s2-h10 on search-val (400 eps). Jobs: 8 evals of existing ckpts + 8 trainings
+  (30k steps) with dependent evals (18674351-74). Time limits tightened (train 6 h, eval 2 h) for backfill.
+- S0: (a) gradient conflict between depth subnets on shared expert layers 0-3 and readout (18674389);
+  (b) readout-only probe: fine-tune only expert final norm + action_out_proj for 5k steps from the supernet for
+  v12-e4-stretch-f1-t16-s4-h5 and v24-e4-top-f0.75-t64-s10-h25, eval at the same keys as E5/E5b (18674390-93).
+  If readout-only ~ full ft5k -> shared-readout interference is the main cause -> V1 (per-depth readouts) first.
+- S4 prep (pi0): `lerobot/pi0_base` = PI base model; HF card and openpi do not list the pretraining mixture. The pi0
+  paper describes it as PI cross-embodiment data + an OXE subset (OXE has no LIBERO). Plan: use pi0_base, document
+  this, and add a leakage-free control initialised from PaliGemma only (no robot pretraining) for the main comparison.
