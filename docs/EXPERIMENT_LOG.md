@@ -231,3 +231,8 @@ Test-set accessed only for the 6 frozen candidates (+3 resumed halves after node
   updates (V3) over per-depth readout only (V1). Readout probe still run to confirm. Submitted s0_ro v12-e4 (only job).
 - 13:46: readout probe 18677115 failed at start (param-name filter matched nothing -> empty optimizer; no GPU time used). Fixed filter + assert; resubmitted as 18677795 (only job).
 - 14:36: readout probe v12-e4 trained (0.024M params, 5k steps): offline val fm 0.478 (full ft5k 0.472). Submitted its closed-loop eval (only job).
+- 15:06: **S0 readout probe v12-e4-stretch-f1-t16-s4-h5: SR 0.415** (supernet 0.450, full ft5k 0.680, standalone 0.853).
+  Training only the readout (0.024M params) does not help -> the shared readout is NOT the cause of the weight-sharing
+  gap; consistent with the gradient-conflict result (conflict in the shared trunk). Decision: skip the second readout
+  probe (v24-e4); M2 will target trunk sharing (per-depth adaptation of shared layers / conflict-aware updates), not
+  per-depth readouts. Next: S1 existing-net evals one by one; submitted v8-e12 @s2-h10 (only job).
