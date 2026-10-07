@@ -262,3 +262,4 @@ Test-set accessed only for the 6 frozen candidates (+3 resumed halves after node
   supernet) as 18700096.
 - 12:41: S2 train V1 (18700096) started 11:55 on cn272 (H100): trainable 99.973M (= v1 99.881M + 92,160 depth gains), 1.98 it/s (~4.2 h), step 5.3k fm anchor .512 / smallest .527. S1 v24-e8 training at 20.9k.
 - ~14:10: S1 training v24-e8-stretch-f1-t16 done; eval submitted (slot A).
+- 16:17: S2 train V1 done (~4.3 h on H100). Submitted S2 eval V0 (v1 supernet on 16 S1 keys, A100) 18704629. S1 eval v24-e8 running.
