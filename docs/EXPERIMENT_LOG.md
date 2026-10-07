@@ -269,3 +269,4 @@ Test-set accessed only for the 6 frozen candidates (+3 resumed halves after node
   benchmark + 16 S1 keys + E4 candidates) is inserted into the S2 slot before its next step -> `outputs/cost/a100_v2.jsonl`.
   Naming clarified in RESULTS.md: E4 "ours" = v1 search pick = unchanged default network with tuned schedule (s2-h10);
   v12-e4-stretch-f1-t16 is a pre-registered standalone net, not a search output.
+- 17:32: S1 v24-e8-stretch-f1-t16 @s2-h10 = 0.833 (11/16); submitted training v20-e8-top-f1-t64. S2: cancelled still-pending eval V0 so the 20-min cost job (latency+memory) runs first; V0 resubmitted by driver afterwards.
