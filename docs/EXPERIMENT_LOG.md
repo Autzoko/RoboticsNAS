@@ -256,3 +256,7 @@ Test-set accessed only for the 6 frozen candidates (+3 resumed halves after node
 - 02:40: S1 new net v8-e4-stretch-f0.5-t64 @s2-h10 = 0.833 (9/16 done). Submitted training v12-e4-top-f0.75-t16 (only job).
 - 07-10 ~06:55: S1 training v12-e4-top-f0.75-t16 done; submitted its eval @s2-h10 (only job).
 - 09:12: S1 new net v12-e4-top-f0.75-t16 @s2-h10 = 0.848 (10/16). Submitted training v24-e8-stretch-f1-t16 (only job).
+- 10:20: user allowed 2 concurrent jobs -> slot A = S1 (`scripts/s1_next.sh`), slot B = S2 (`scripts/s2_next.sh`:
+  train V1 -> eval V0 -> eval V1 -> train V2 -> eval V2 -> train V3 -> eval V3; evals on the 16 S1 keys
+  `results/s1_all16.json` @s2-h10, A100 only). Submitted S2 train V1 (`--depth-gain`, 30k steps, same recipe as v1
+  supernet) as 18700096.
