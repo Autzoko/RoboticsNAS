@@ -75,6 +75,10 @@ networks are competitive with the default once the schedule is short. The closed
 subnets well (Claim 1/2), but the supernet itself under-rates shallow experts; 5k-step fine-tuning closes about half the gap.
 Search therefore favours the anchor network with a cheaper schedule.
 
+Naming: "v1 search pick" = `ours_proxySH_kd_cap` (default network, s2-h10). `v12-e4-stretch-f1-t16` (12 VLM layers,
+4-layer expert, 16 visual tokens) is a *pre-registered standalone* network (E5/S1), not the output of the v1 search;
+memory was not measured in v1 (added to `rnas/latency.py` for v2: weights_MB, act_peak_MB, deploy_MB).
+
 ## Final test (official LIBERO init states, 2000 episodes per policy) — E4
 
 Candidates frozen at commit `186b175` (`results/final_candidates.json`); each evaluated once on all 50 official
@@ -84,17 +88,19 @@ init states x 40 tasks (2000 episodes). Latency: A100, batch 1, eager bf16 (`ms/
 |---|---|---|---|---|---|---|---|---|---|
 | smolvla_default_published | v16-e16-stretch-f1-t64-s10-h50 | 0.708 | 0.656 | 0.818 | 0.514 | **0.674** [0.653, 0.694] | 2000 | 374 | 7.5 |
 | smolvla_default_tuned_schedule | v16-e16-stretch-f1-t64-s2-h10 | 0.816 | 0.914 | 0.886 | 0.626 | **0.810** [0.793, 0.827] | 2000 | 120 | 12.0 |
-| ours_proxySH_kd_cap | v16-e16-stretch-f1-t64-s2-h10 | 0.864 | 0.932 | 0.896 | 0.590 | **0.821** [0.803, 0.837] | 2000 | 120 | 12.0 |
+| v1 search pick = default net + tuned schedule (`ours_proxySH_kd_cap`) | v16-e16-stretch-f1-t64-s2-h10 | 0.864 | 0.932 | 0.896 | 0.590 | **0.821** [0.803, 0.837] | 2000 | 120 | 12.0 |
 | random_search_cap_ft5k | v16-e16-stretch-f1-t64-s10-h50 | 0.626 | 0.760 | 0.786 | 0.478 | **0.662** [0.641, 0.683] | 2000 | 374 | 7.5 |
 | nas_valloss_top1_cap | v16-e8-stretch-f1-t16-s4-h50 | 0.716 | 0.804 | 0.836 | 0.448 | **0.701** [0.681, 0.721] | 2000 | 124 | 2.5 |
 | standalone_race_best_small | v12-e4-stretch-f1-t16-s4-h5 | 0.826 | 0.964 | 0.906 | 0.596 | **0.823** [0.806, 0.839] | 2000 | 85 | 17.1 |
 
 Takeaways:
-- Closed-loop-aware search (ours) beats the published SmolVLA configuration by **+14.7 points** (0.821 vs 0.674)
-  at **3.1x lower per-call latency**, and beats what standard val-loss NAS selects (0.701) and random search (0.662).
+- The v1 search pick (`ours_proxySH_kd_cap`) is the **unchanged SmolVLA network** (v16-e16-stretch-f1-t64) with a
+  tuned schedule (2 denoising steps, execute 10), not a new architecture. It beats the published configuration by
+  **+14.7 points** (0.821 vs 0.674) at **3.1x lower per-call latency** (374 -> 120 ms) but **1.6x higher compute per
+  control step** (7.5 -> 12.0 ms) because it replans 5x more often, and beats what standard val-loss NAS selects (0.701) and random search (0.662).
   The gain comes from the inference-schedule axes (2 denoising steps, 10-step execution); the network is the default,
   because weight sharing under-rates smaller experts (Claim 4).
-- Supernet weights + 5k-step fine-tune (ours) ~ standalone 30k training of the same arch/schedule (0.821 vs 0.810):
+- Supernet weights + 5k-step fine-tune (v1 search pick) ~ standalone 30k training of the same arch/schedule (0.821 vs 0.810):
   the cheap extraction pipeline loses nothing for the anchor network.
 - A pre-registered small network trained standalone (4-layer expert, 12 VLM layers, 16 visual tokens) matches the
   default network (0.823 vs 0.810-0.821) with the cheapest policy call (85 ms vs 120-374 ms) -> SmolVLA's action expert

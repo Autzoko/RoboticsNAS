@@ -263,3 +263,9 @@ Test-set accessed only for the 6 frozen candidates (+3 resumed halves after node
 - 12:41: S2 train V1 (18700096) started 11:55 on cn272 (H100): trainable 99.973M (= v1 99.881M + 92,160 depth gains), 1.98 it/s (~4.2 h), step 5.3k fm anchor .512 / smallest .527. S1 v24-e8 training at 20.9k.
 - ~14:10: S1 training v24-e8-stretch-f1-t16 done; eval submitted (slot A).
 - 16:17: S2 train V1 done (~4.3 h on H100). Submitted S2 eval V0 (v1 supernet on 16 S1 keys, A100) 18704629. S1 eval v24-e8 running.
+- 07-10 evening: per user, **memory is reported from now on**. `rnas/latency.py` now records per arch: call_ms,
+  ms_per_step, active params (vision / VLM / expert), weights_MB (bf16, active params only), act_peak_MB (measured
+  peak extra GPU memory per call), deploy_MB. One cost job (A100) over `results/cost_archs.json` (125 archs:
+  benchmark + 16 S1 keys + E4 candidates) is inserted into the S2 slot before its next step -> `outputs/cost/a100_v2.jsonl`.
+  Naming clarified in RESULTS.md: E4 "ours" = v1 search pick = unchanged default network with tuned schedule (s2-h10);
+  v12-e4-stretch-f1-t16 is a pre-registered standalone net, not a search output.

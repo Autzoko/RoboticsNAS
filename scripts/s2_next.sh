@@ -24,6 +24,10 @@ submit_train() { V=$1; shift
 submit_eval() { V=$1
   sbatch -J s2_eval_$V --gres=gpu:a100:1 --time=10:00:00 scripts/gpu.sbatch rnas.rollout --ckpt $(ckpt $V) \
     --archs results/s1_all16.json --mode search --n-eps 10 --out outputs/s2/$V.jsonl; echo "next: eval $V"; }
+# cost table (latency + memory) for all archs, once, before the next S2 step (user request 2026-10-07)
+if [ ! -s outputs/cost/a100_v2.jsonl ]; then mkdir -p outputs/cost
+  sbatch -J s2_cost --gres=gpu:a100:1 --time=01:00:00 scripts/gpu.sbatch rnas.latency --archs results/cost_archs.json \
+    --out outputs/cost/a100_v2.jsonl; echo "next: cost table"; exit 0; fi
 # order
 [ -f $(ckpt V1) ] || { submit_train V1 --depth-gain; exit 0; }
 done_eval V0 || { submit_eval V0; exit 0; }
