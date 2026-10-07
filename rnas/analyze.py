@@ -57,7 +57,7 @@ def main():
     for f in ("proxies.jsonl", "latency.jsonl"):
         p = b / f
         if p.exists():
-            q = pd.read_json(p, lines=True).drop_duplicates("arch", keep="last")
+            q = pd.read_json(p, lines=True).groupby("arch", as_index=False).last()
             df = df.merge(q.drop(columns=[c for c in ("gpu",) if c in q]), on="arch", how="left")
     for a in ("n_vlm", "n_exp", "bridge", "ffn", "vtok", "steps", "horizon"):
         df[a] = [getattr(Arch.from_key(k), a) for k in df.arch]

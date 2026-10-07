@@ -270,3 +270,10 @@ Test-set accessed only for the 6 frozen candidates (+3 resumed halves after node
   Naming clarified in RESULTS.md: E4 "ours" = v1 search pick = unchanged default network with tuned schedule (s2-h10);
   v12-e4-stretch-f1-t16 is a pre-registered standalone net, not a search output.
 - 17:32: S1 v24-e8-stretch-f1-t16 @s2-h10 = 0.833 (11/16); submitted training v20-e8-top-f1-t64. S2: cancelled still-pending eval V0 so the 20-min cost job (latency+memory) runs first; V0 resubmitted by driver afterwards.
+- 07-10 ~18:30: implemented (local, no new jobs) toward a NAS-method paper: `docs/M1_theory.md` (policy-gap bound,
+  bootstrapped reference, bound pruning, rollout-free certification of cheaper archs), `search.bound_race` (M1+M3),
+  `search.predictor_search` (ridge/one-hot BO-style baseline), `rnas/zerocost.py` (grad-norm, SNIP, NASWOT),
+  cost-capped replay (`--caps ms_per_step:q, deploy_MB:q, call_ms:q`), `proxies.py --ref-arch` (D_ref columns).
+  Replay smoke run (5 reps) OK. M1 references pre-registered in `results/m1_refs.json` (top-3 non-default nets by
+  search-half SR): v16-e12-top-f0.75-t64-s2-h10, v16-e8-stretch-f0.75-t16-s4-h5, v12-e8-top-f0.75-t64-s2-h5.
+  S2 driver extended: cost -> V0 eval -> V1 eval -> zerocost -> (record ref, D_ref) x3 -> V2 -> V3.

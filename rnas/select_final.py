@@ -19,7 +19,7 @@ def main():
     ep = sorted({c[2] for c in cells})
     side = pd.DataFrame({"arch": keys})
     for f in ("proxies.jsonl", "latency.jsonl"):
-        side = side.merge(pd.read_json(f"{BENCH}/{f}", lines=True).drop_duplicates("arch", keep="last"),
+        side = side.merge(pd.read_json(f"{BENCH}/{f}", lines=True).groupby("arch", as_index=False).last(),
                           on="arch", how="left")
     lat = side["ms_per_step"].to_numpy()
     cap = float(np.median(lat))

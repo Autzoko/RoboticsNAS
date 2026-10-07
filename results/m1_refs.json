@@ -1,0 +1,13 @@
+{
+ "note": "M1 bootstrapped references, pre-registered 2026-10-07: top-3 non-default nets by search-half SR (eps 0-4) on the v1 supernet E2 table",
+ "refs": [
+  "v16-e12-top-f0.75-t64-s2-h10",
+  "v16-e8-stretch-f0.75-t16-s4-h5",
+  "v12-e8-top-f0.75-t64-s2-h5"
+ ],
+ "search_half_sr": [
+  0.805,
+  0.805,
+  0.795
+ ]
+}

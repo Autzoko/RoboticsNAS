@@ -44,7 +44,7 @@ def main():
     files = [b / "proxies.jsonl", b / "zerocost.jsonl", Path(args.cost) if args.cost else b / "latency.jsonl"]
     for f in files:
         if f.exists():
-            q = pd.read_json(f, lines=True).drop_duplicates("arch", keep="last")
+            q = pd.read_json(f, lines=True).groupby("arch", as_index=False).last()
             q = q[[c for c in q.columns if c == "arch" or c not in side.columns]]
             side = side.merge(q, on="arch", how="left")
     X = S.arch_features(keys)
