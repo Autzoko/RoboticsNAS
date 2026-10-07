@@ -18,7 +18,7 @@ TRAIN=(  "V1:--depth-gain"  "V2:--sampler depth --kd same_depth"  "V3:--pcgrad" 
 done_eval() { [ -f outputs/s2/$1.jsonl ] && [ $(wc -l < outputs/s2/$1.jsonl) -ge 640 ]; }
 ckpt() { [ $1 = V0 ] && echo outputs/supernet_v1/final.pt || echo outputs/supernet_m2_$1/final.pt; }
 submit_train() { V=$1; shift
-  sbatch -J s2_train_$V --gres=gpu:1 --constraint="a100|h100|h200" --cpus-per-task=16 --mem=110G --time=14:00:00 \
+  sbatch -J s2_train_$V --gres=gpu:1 --constraint="a100|h100|h200" --cpus-per-task=16 --mem=110G --time=10:00:00 \
     scripts/gpu.sbatch rnas.train --mode supernet --out outputs/supernet_m2_$V --steps 30000 --batch 64 --workers 12 \
     --save-every 1000 "$@"; echo "next: train $V"; }
 submit_eval() { V=$1
