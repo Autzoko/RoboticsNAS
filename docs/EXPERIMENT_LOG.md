@@ -261,3 +261,4 @@ Test-set accessed only for the 6 frozen candidates (+3 resumed halves after node
   `results/s1_all16.json` @s2-h10, A100 only). Submitted S2 train V1 (`--depth-gain`, 30k steps, same recipe as v1
   supernet) as 18700096.
 - 12:41: S2 train V1 (18700096) started 11:55 on cn272 (H100): trainable 99.973M (= v1 99.881M + 92,160 depth gains), 1.98 it/s (~4.2 h), step 5.3k fm anchor .512 / smallest .527. S1 v24-e8 training at 20.9k.
+- ~14:10: S1 training v24-e8-stretch-f1-t16 done; eval submitted (slot A).
