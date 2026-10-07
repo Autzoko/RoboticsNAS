@@ -68,6 +68,9 @@ def main():
     ap.add_argument("--archs", required=True)
     ap.add_argument("--out", required=True)
     ap.add_argument("--record-dir", default=None)
+    ap.add_argument("--ref-arch", default=None, help="reference subnet for D_h (default: anchor/DEFAULT); "
+                    "--record-dir must hold states visited by this reference")
+    ap.add_argument("--only-onpolicy", action="store_true", help="skip offline proxies (bootstrapped-reference runs)")
     ap.add_argument("--n-batches", type=int, default=16)
     ap.add_argument("--bs", type=int, default=32)
     ap.add_argument("--visited-per-task", type=int, default=32)
@@ -81,7 +84,7 @@ def main():
     load_trainable(model, args.ckpt)
     pre, post = make_processors(model, args.stats)
 
-    off = [pre(b) for b in offline_batches(args.split, args.n_batches, args.bs, model.chunk)]
+    off = [] if args.only_onpolicy else [pre(b) for b in offline_batches(args.split, args.n_batches, args.bs, model.chunk)]
     vis = [pre(b) for b in visited_batches(args.record_dir, args.visited_per_task, args.bs)] if args.record_dir else []
     gen = torch.Generator(device="cuda")
     st = json.loads(Path(args.stats).read_text())["action"]
@@ -96,24 +99,31 @@ def main():
         with torch.autocast("cuda", dtype=torch.bfloat16):
             return model.sample_actions(b, a, noise=fixed_noise(b, k)).float()
 
-    # anchor references (shared by all archs)
-    anchor_off = [denoise(b, DEFAULT, i) for i, b in enumerate(off)]
-    anchor_vis = [denoise(b, DEFAULT, 10_000 + i) for i, b in enumerate(vis)]
+    # reference policy (anchor by default; bootstrapped incumbent in M1)
+    ref = Arch.from_key(args.ref_arch) if args.ref_arch else DEFAULT
+    dcol = "kd_onpolicy" if args.ref_arch is None else f"D_ref[{args.ref_arch}]"
+    anchor_off = [] if args.only_onpolicy else [denoise(b, ref, i) for i, b in enumerate(off)]
+    anchor_vis = [denoise(b, ref, 10_000 + i) for i, b in enumerate(vis)]
 
     rows = []
     for a in archs:
         r = {"arch": a.key()}
+        if args.only_onpolicy:
+            off_iter = []
+        else:
+            off_iter = off
         fm = []
-        for i, b in enumerate(off):
+        for i, b in enumerate(off_iter):
             act = model.policy.prepare_action(b)
             gen.manual_seed(i)
             nz = torch.randn(act.shape, device="cuda", generator=gen)
             tt = torch.rand(act.shape[0], device="cuda", generator=gen) * 0.999 + 0.001
             with torch.autocast("cuda", dtype=torch.bfloat16):
                 fm.append(float(flow_losses(model, b, [a], 0.0, noise=nz, t=tt)[0][1]))
-        r["fm_loss"] = float(np.mean(fm))
+        if fm:
+            r["fm_loss"] = float(np.mean(fm))
         l1, l1e, kd, ge = [], [], [], []
-        for i, b in enumerate(off):
+        for i, b in enumerate(off_iter):
             pred = denoise(b, a, i)
             gt = b["action"][:, :, :ACT].float()
             valid = (~b["action_is_pad"]).float()[..., None]
@@ -126,8 +136,9 @@ def main():
             flip = (g_gt != g_gt[:, :1]).any(1)
             if flip.any():
                 ge.append(float((g_gt[flip] != g_pr[flip]).float().mean()))
-        r.update(act_l1=float(np.mean(l1)), act_l1_exec=float(np.mean(l1e)), kd_offline=float(np.mean(kd)),
-                 grip_err=float(np.mean(ge)) if ge else float("nan"))
+        if l1:
+            r.update(act_l1=float(np.mean(l1)), act_l1_exec=float(np.mean(l1e)), kd_offline=float(np.mean(kd)),
+                     grip_err=float(np.mean(ge)) if ge else float("nan"))
         if vis:
             kdv, sc = [], []
             for i, b in enumerate(vis):
@@ -136,7 +147,7 @@ def main():
                 p2 = denoise(b, a, 20_000 + i)
                 kdv.append(float((p1[:, :h] - anchor_vis[i][:, :h]).abs().mean()))
                 sc.append(float((p1[:, :h] - p2[:, :h]).abs().mean()))
-            r.update(kd_onpolicy=float(np.mean(kdv)), self_cons=float(np.mean(sc)))
+            r.update({dcol: float(np.mean(kdv)), "self_cons": float(np.mean(sc))})
         rows.append(r)
         print(r, flush=True)
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
