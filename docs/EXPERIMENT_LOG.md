@@ -277,3 +277,8 @@ Test-set accessed only for the 6 frozen candidates (+3 resumed halves after node
   Replay smoke run (5 reps) OK. M1 references pre-registered in `results/m1_refs.json` (top-3 non-default nets by
   search-half SR): v16-e12-top-f0.75-t64-s2-h10, v16-e8-stretch-f0.75-t16-s4-h5, v12-e8-top-f0.75-t64-s2-h5.
   S2 driver extended: cost -> V0 eval -> V1 eval -> zerocost -> (record ref, D_ref) x3 -> V2 -> V3.
+- 20:52: cost table done (`results/cost/a100_v2.jsonl`, 125 archs, **A100-PCIE-40GB**; summary `results/cost_v2.md`).
+  v12-e4-stretch-f1-t16 @s2-h10 vs published SmolVLA config: 69 vs 396 ms/call, **6.9 vs 7.9 ms/control step**,
+  290M vs 403M active params (expert 26M vs 100M), activation peak 64 vs 212 MB, deploy 616 vs 980 MB, search-val SR
+  0.880 vs 0.713 (standalone). -> dominates on SR, latency, per-step compute and memory (search-val only).
+  Default net @s2-h10: 127 ms/call, 12.7 ms/step, 980 MB. S2: eval V0 submitted; S1: v20-e8-top training running.
