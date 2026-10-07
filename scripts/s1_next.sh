@@ -9,7 +9,7 @@ for f in sorted(glob.glob("outputs/s1/*.jsonl")):
     n = sum(len(x["success"]) for x in r)
     if n: print(f"{f.split('/')[-1][:-6]:40s} tasks={len(r):2d} SR={sum(sum(x['success']) for x in r)/n:.3f}")
 PY
-if squeue -h -u ll5582 -o "%j" | grep -qE "^(s0|s1|bench|test|ft_|ev_)"; then echo "RNAS job in queue -> nothing submitted"; exit 0; fi
+if squeue -h -u ll5582 -o "%j" | grep -qE "^(s1_|s1ev_)"; then echo "S1 job in queue -> nothing submitted"; exit 0; fi
 NEXT=$(python3 - <<'PY'
 import json, os
 d = json.load(open("results/s1_archs.json")); e5 = json.load(open("results/e5_archs.json"))["archs"]
