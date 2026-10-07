@@ -283,3 +283,4 @@ Test-set accessed only for the 6 frozen candidates (+3 resumed halves after node
   0.880 vs 0.713 (standalone). -> dominates on SR, latency, per-step compute and memory (search-val only).
   Default net @s2-h10: 127 ms/call, 12.7 ms/step, 980 MB. S2: eval V0 submitted; S1: v20-e8-top training running.
 - 00:35: S1 v20-e8-top training on a slow node (1.44 it/s), may hit the 6 h limit (no permission to extend); driver will resume from last.pt if so. Future S1 trainings use an 8 h limit. S2 eval V0 running (93/640 rows).
+- ~01:45: S1 training v20-e8-top-f1-t64 completed within limit; eval submitted.
