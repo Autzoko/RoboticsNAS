@@ -29,7 +29,7 @@ read M K CK <<< "$NEXT"
 case $M in
   eval)  sbatch -J s1ev_$K --gres=gpu:a100:1 --time=02:00:00 scripts/gpu.sbatch rnas.rollout --ckpt $CK --archs $K \
            --mode search --n-eps 10 --out outputs/s1/$K.jsonl ;;
-  train) sbatch -J s1_$K --gres=gpu:1 --constraint="a100|h100|h200" --cpus-per-task=16 --mem=110G --time=06:00:00 \
+  train) sbatch -J s1_$K --gres=gpu:1 --constraint="a100|h100|h200" --cpus-per-task=16 --mem=110G --time=08:00:00 \
            scripts/gpu.sbatch rnas.train --mode fixed --arch $K --out outputs/standalone/$K --steps 30000 --batch 64 --workers 12 ;;
   done)  echo "S1 complete" ;;
 esac
