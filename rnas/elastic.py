@@ -85,11 +85,29 @@ class ElasticSmolVLA(nn.Module):
         self.head_dim = self.vwe.vlm.config.text_config.head_dim
         self.chunk = self.m.config.chunk_size
         self.depth_gain = None  # M2-V1: per-depth multiplicative gains on expert RMSNorm outputs (enable_depth_gain)
+        self.kv_adapt = None  # M2-V4: per (expert layer j, source VLM layer l) affine on the bridged K/V
 
     def enable_depth_gain(self):
         hid = self.exp_layers[0].input_layernorm.weight.shape[0]
         dev = self.exp_layers[0].input_layernorm.weight.device
         self.depth_gain = nn.Parameter(torch.ones(len(N_EXP), MAX_EXP, 2, hid, device=dev))
+
+    def enable_kv_adapter(self):
+        k = self.vlm_layers[0].self_attn.k_proj.weight
+        kv_dim = k.shape[0]
+        # [expert layer, source VLM layer, {K,V}, {scale, shift}, kv_dim]; identity init
+        w = torch.zeros(MAX_EXP, MAX_VLM, 2, 2, kv_dim, device=k.device)
+        w[:, :, :, 0] = 1.0
+        self.kv_adapt = nn.Parameter(w)
+
+    def _adapt_kv(self, kp, vp, j: int, l: int):
+        if self.kv_adapt is None:
+            return kp, vp
+        a = self.kv_adapt[j, l]
+        shp = kp.shape[-2:]
+        kp = kp * a[0, 0].view(shp).to(kp.dtype) + a[0, 1].view(shp).to(kp.dtype)
+        vp = vp * a[1, 0].view(shp).to(vp.dtype) + a[1, 1].view(shp).to(vp.dtype)
+        return kp, vp
 
     def _gain(self, arch: Arch, j: int, which: int):
         if self.depth_gain is None:
@@ -165,7 +183,7 @@ class ElasticSmolVLA(nn.Module):
         h = suffix_embs
         for j in range(arch.n_exp):
             layer = self.exp_layers[j]
-            kp, vp = kvs[bmap[j]]
+            kp, vp = self._adapt_kv(*kvs[bmap[j]], j, bmap[j])
             x = layer.input_layernorm(h)
             g = self._gain(arch, j, 0)
             if g is not None:

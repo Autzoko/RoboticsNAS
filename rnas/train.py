@@ -117,6 +117,7 @@ def main():
     ap.add_argument("--log-every", type=int, default=50)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--depth-gain", action="store_true", help="M2-V1 per-depth norm gains")
+    ap.add_argument("--kv-adapter", action="store_true", help="M2-V4 bridge-conditioned K/V adapters")
     ap.add_argument("--sampler", choices=["config", "depth"], default="config", help="M2-V2 depth-balanced")
     ap.add_argument("--kd", choices=["anchor", "same_depth"], default="anchor", help="M2-V2 same-depth teacher")
     ap.add_argument("--pcgrad", action="store_true", help="M2-V3 conflict projection across subnets")
@@ -146,6 +147,8 @@ def main():
     pre, _ = make_processors(model, args.stats)
     if args.depth_gain:
         model.enable_depth_gain()
+    if args.kv_adapter:
+        model.enable_kv_adapter()
     if args.init:
         load_trainable(model, args.init)
     save_names = {n for n, p in model.named_parameters() if p.requires_grad}  # full expert set in ckpts

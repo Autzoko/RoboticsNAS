@@ -33,7 +33,10 @@ class Arch:
     def bridge_map(self) -> list[int]:
         """VLM layer index read by expert layer j (j = 0..n_exp-1)."""
         if self.bridge == "stretch":
-            return [((j + 1) * self.n_vlm) // self.n_exp - 1 for j in range(self.n_exp)]
+            # (j+1)*n_vlm//n_exp - 1 is -1 for the first layers when n_exp > n_vlm; v1/S1 standalone runs resolved -1
+            # as kvs[-1] = layer n_vlm-1 (single-arch prefix). Make that explicit so supernet training (longer shared
+            # prefix) uses the same layer.
+            return [(((j + 1) * self.n_vlm) // self.n_exp - 1) % self.n_vlm for j in range(self.n_exp)]
         if self.bridge == "top":
             assert self.n_exp <= self.n_vlm
             return [self.n_vlm - self.n_exp + j for j in range(self.n_exp)]

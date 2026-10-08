@@ -289,3 +289,14 @@ Test-set accessed only for the 6 frozen candidates (+3 resumed halves after node
   Kendall 0.202, Spearman 0.237, mean gap +0.211 (shallow e4/e8 +0.254, deep e12/e16 +0.126). Anchor net nearly
   unbiased (0.833 vs 0.843); best standalone v12-e4-stretch-f1-t16 0.880 ranked low by supernet (0.440); v24-e4-top
   0.147 vs 0.752. Confirms weight-sharing bias with n=12. Target for M2 variants: Kendall >= 0.6. Submitted eval V1.
+- 09:05: **Gate 1 — V1 (per-depth norm gains) does not fix ranking**: Kendall 0.215 (V0 0.202), mean gap +0.204
+  (V0 +0.211). Gap analysis on V0 (12 nets): gap ~ bridge mismatch (mean |b(j)-j|) Spearman 0.62, R2 0.52 vs expert
+  depth R2 0.35 (both: 0.62); e4 with small mismatch (v8-e4-stretch, layers 1/3/5/7) gap only +0.10; worst
+  v24-e4-top (layers 20-23) +0.61. -> the conflict is that shared expert layers receive K/V from different VLM layers.
+  **Bug found**: stretch bridge with n_exp > n_vlm returned -1 for j=0 -> kvs[-1]; = layer n_vlm-1 in standalone/eval
+  (single-arch prefix) but the batch's deepest computed layer during supernet training -> inconsistent for those
+  subnets (stretch, n_vlm 8 with e12/e16 and n_vlm 12 with e16). Fixed explicitly as n_vlm-1 (standalone semantics
+  unchanged; future supernets consistent). v1/V0/V1 supernet numbers for those subnets carry this caveat.
+  New variant **V4**: bridge-conditioned K/V adapters (per expert layer j x source VLM layer l, per-channel scale+shift
+  on K and V, 16x24x2x2x320 = 0.49M params, identity init). S2 order now: zerocost (running) -> V4 train/eval ->
+  M1 refs -> V3 -> V2.
