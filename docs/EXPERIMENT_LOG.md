@@ -303,3 +303,4 @@ Test-set accessed only for the 6 frozen candidates (+3 resumed halves after node
 - 09:35: S1 training v24-e12-top-f1-t64 done; eval submitted (13/16 trained). S2 zerocost pending.
 - 11:38: zerocost (critical-path-irrelevant) still pending after 2 h -> cancelled (not started) and V4 moved ahead of it in the S2 driver; zerocost runs after V4 eval.
 - 17:03: S1 v24-e12-top-f1-t64 @s2-h10 = 0.840 (13/16); submitted training v16-e12-top-f0.75-t16. S2 V4 train started 16:38 on cn001 (A100): trainable 100.373M (= 99.881M + 0.4915M kv_adapt), 1.03 it/s (~8.1 h, limit 10 h), step 1.4k fm anchor .672 / smallest .732. Backfill started both before the preempt question mattered.
+- 07-10-09 ~00:50: S2 train V4 completed (30k); eval V4 submitted.
