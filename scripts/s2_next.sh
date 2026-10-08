@@ -32,14 +32,14 @@ if [ ! -s outputs/cost/a100_v2.jsonl ]; then mkdir -p outputs/cost
 [ -f $(ckpt V1) ] || { submit_train V1 --depth-gain; exit 0; }
 done_eval V0 || { submit_eval V0; exit 0; }
 done_eval V1 || { submit_eval V1; exit 0; }
+# V4 (bridge-conditioned K/V adapters) — prioritised after V1 failed and the gap analysis implicated the bridge
+[ -f $(ckpt V4) ] || { submit_train V4 --kv-adapter; exit 0; }
+done_eval V4 || { submit_eval V4; exit 0; }
 # M1 groundwork on the v1 supernet (E2 table): zero-cost baselines, then bootstrapped references
 B=outputs/bench_sn
 if [ ! -s $B/zerocost.jsonl ]; then
   sbatch -J s2_zerocost --gres=gpu:1 --constraint="a100|h100|h200" --time=02:00:00 scripts/gpu.sbatch rnas.zerocost \
     --ckpt outputs/supernet_v1/final.pt --archs results/bench_archs.json --out $B/zerocost.jsonl; echo "next: zerocost"; exit 0; fi
-# V4 (bridge-conditioned K/V adapters) — prioritised after V1 failed and the gap analysis implicated the bridge
-[ -f $(ckpt V4) ] || { submit_train V4 --kv-adapter; exit 0; }
-done_eval V4 || { submit_eval V4; exit 0; }
 for REF in $(python3 -c "import json;print(' '.join(json.load(open('results/m1_refs.json'))['refs']))"); do
   if [ ! -s $B/refs/$REF/rollouts.jsonl ] || [ $(wc -l < $B/refs/$REF/rollouts.jsonl) -lt 40 ]; then
     sbatch -J s2_refrec_$REF --gres=gpu:a100:1 --time=04:00:00 scripts/gpu.sbatch rnas.rollout --ckpt outputs/supernet_v1/final.pt \

@@ -301,3 +301,4 @@ Test-set accessed only for the 6 frozen candidates (+3 resumed halves after node
   on K and V, 16x24x2x2x320 = 0.49M params, identity init). S2 order now: zerocost (running) -> V4 train/eval ->
   M1 refs -> V3 -> V2.
 - 09:35: S1 training v24-e12-top-f1-t64 done; eval submitted (13/16 trained). S2 zerocost pending.
+- 11:38: zerocost (critical-path-irrelevant) still pending after 2 h -> cancelled (not started) and V4 moved ahead of it in the S2 driver; zerocost runs after V4 eval.
