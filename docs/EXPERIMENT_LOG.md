@@ -300,3 +300,4 @@ Test-set accessed only for the 6 frozen candidates (+3 resumed halves after node
   New variant **V4**: bridge-conditioned K/V adapters (per expert layer j x source VLM layer l, per-channel scale+shift
   on K and V, 16x24x2x2x320 = 0.49M params, identity init). S2 order now: zerocost (running) -> V4 train/eval ->
   M1 refs -> V3 -> V2.
+- 09:35: S1 training v24-e12-top-f1-t64 done; eval submitted (13/16 trained). S2 zerocost pending.
