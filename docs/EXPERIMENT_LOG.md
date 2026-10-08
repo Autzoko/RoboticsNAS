@@ -285,3 +285,7 @@ Test-set accessed only for the 6 frozen candidates (+3 resumed halves after node
 - 00:35: S1 v20-e8-top training on a slow node (1.44 it/s), may hit the 6 h limit (no permission to extend); driver will resume from last.pt if so. Future S1 trainings use an 8 h limit. S2 eval V0 running (93/640 rows).
 - ~01:45: S1 training v20-e8-top-f1-t64 completed within limit; eval submitted.
 - 02:37: S1 v20-e8-top-f1-t64 @s2-h10 = 0.790 (12/16). Submitted training v24-e12-top-f1-t64. S2 V0 eval at 492/640 rows.
+- 04:05: **Gate 1 baseline — V0 (v1 supernet) vs standalone, 12 S1 nets @s2-h10** (`results/s2_rank.md`):
+  Kendall 0.202, Spearman 0.237, mean gap +0.211 (shallow e4/e8 +0.254, deep e12/e16 +0.126). Anchor net nearly
+  unbiased (0.833 vs 0.843); best standalone v12-e4-stretch-f1-t16 0.880 ranked low by supernet (0.440); v24-e4-top
+  0.147 vs 0.752. Confirms weight-sharing bias with n=12. Target for M2 variants: Kendall >= 0.6. Submitted eval V1.
