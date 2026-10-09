@@ -306,3 +306,12 @@ Test-set accessed only for the 6 frozen candidates (+3 resumed halves after node
 - 07-10-09 ~00:50: S2 train V4 completed (30k); eval V4 submitted.
 - 01:12: S1 training v16-e12-top-f0.75-t16 done; eval submitted (14/16 trained). S2 eval V4 pending.
 - 02:13: S1 v16-e12-top-f0.75-t16 @s2-h10 = 0.823 (14/16); submitted training v24-e16-stretch-f0.5-t16. S2 eval V4 still pending.
+- 07-10-09 07:45: **Gate 1 — V4 (bridge-conditioned K/V adapters) also fails.** n=14 standalone nets @s2-h10:
+  Kendall V0 0.101 | V1 0.134 | **V4 -0.022**; mean gap V0 +0.203 | V1 +0.194 | V4 +0.186; deep-subnet gap reduced
+  (V0 .134 -> V4 .104) but shallow unchanged (+.247). (`results/s2_rank.md`)
+  **Noise ceiling**: standalone SR range 0.752-0.880 (std 0.033); test-retest Kendall of the standalone ranking at 400 eps
+  (bootstrap) = 0.56 [0.35, 0.75]; split-half (200 vs 200) 0.67. -> the planned Gate-1 threshold (Kendall >= 0.6) was
+  above what is measurable; relative to the ceiling all supernet variants recover ~0-25% of the reliable signal.
+  Conclusion: weight-sharing does not rank standalone performance in this VLA space; structural fixes (V1 norm gains,
+  V4 bridge adapters) do not change it. Most standalone nets are within ~0.05 SR of each other -> the meaningful
+  objective is cost at iso-success, not finding a single "most accurate" net.
