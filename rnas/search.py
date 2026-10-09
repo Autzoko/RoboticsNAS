@@ -130,38 +130,42 @@ def predictor_search(R, cand, budget, X, n_init=10, cells_per=40, ridge=1.0):
 def bound_race(R, cand, budget, D: dict, h, n0=8, ref_cells=200, q=0.9, delta=0.01):
     """M1+M3: bootstrapped-reference bound racing.
     D: {ref_idx: divergence vector over all archs, D_h(a; ref)} (lower = closer to ref); h: executed horizon per arch.
-    LB(a) = J(r) - L * D(a; r) / h(a)   (T absorbed into L);  UB(a) = J(r) + L * D(a; r) / h(a).
-    Round: evaluate incumbent r (ref_cells); prune candidates whose UB cannot beat the best SR so far by delta (after L
-    is calibrated); shortlist the rest ordered by LB; paired SH;
-    calibrate L (q-quantile of |J_a - J_r| / (D/h)) from raced pairs; if the SH winner beats r on the same paired cells,
-    it becomes the new reference (when its D vector is available)."""
-    refs = [r for r in D if r in cand] or list(D)
-    r = refs[0]
+    The bound J(a) <= J(r) + L * D(a; r) / h(a) holds for any reference r, so r may lie OUTSIDE the cost-feasible
+    candidate set (it is then only a yardstick and is never returned). Incumbent = best candidate observed so far.
+    Round: evaluate r (ref_cells); prune candidates whose UB cannot beat the incumbent by delta (after L is calibrated);
+    shortlist the rest by LB (closest to r first); paired SH among the shortlist; calibrate L (q-quantile of
+    |J_a - J_r| / (D/h)) on raced pairs; if the SH winner has a D vector, it becomes the new reference (bootstrap)."""
+    cset = set(cand)
+    in_c = [r for r in D if r in cset]
+    r = in_c[0] if in_c else next(iter(D))
+    n_eval = min(R.Ss.shape[1], ref_cells)
     used = ref_cells
     Jr = R.sr(r, ref_cells)
     L = None
-    raced = set([r])
-    best, best_sr = r, Jr
+    raced = {r}
+    best, best_sr = (r, Jr) if r in cset else (None, -1.0)
     while used < budget:
         d = D[r] / np.maximum(h, 1)
-        pool = [i for i in cand if i not in raced]
+        pool = [i for i in cand if i not in raced and np.isfinite(d[i])]
         if L is not None:
             pool = [i for i in pool if Jr + L * d[i] >= best_sr + delta]
         if not pool:
             break
-        pool = sorted(pool, key=lambda i: d[i])[:n0]  # highest LB first (LB is monotone in d for fixed r)
-        win, u = successive_halving(R, pool + [r], max(1, budget - used))
+        pool = sorted(pool, key=lambda i: d[i])[:n0]
+        race = pool + ([best] if best is not None and best not in pool else [])
+        win, u = successive_halving(R, race, max(1, budget - used))
         used += u
-        n_eval = min(R.Ss.shape[1], ref_cells)
         ratios = [abs(R.sr(i, n_eval) - Jr) / d[i] for i in pool if d[i] > 0]
         if ratios:
             L = float(np.quantile(ratios, q))
         raced |= set(pool)
         w_sr = R.sr(win, n_eval)
-        if w_sr > best_sr:
+        if win in cset and w_sr > best_sr:
             best, best_sr = win, w_sr
-            if win in D:  # bootstrap the reference
+            if win in D and win != r:  # bootstrap the reference
                 r, Jr = win, w_sr
         if u == 0:
             break
+    if best is None:  # fall back: best observed candidate
+        best = max(cand, key=lambda i: R.sr(i, n_eval))
     return best, used

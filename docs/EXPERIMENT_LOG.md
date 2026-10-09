@@ -325,3 +325,13 @@ Test-set accessed only for the 6 frozen candidates (+3 resumed halves after node
 - 14:42: D_ref #2 done; M1 ref #3 (v12-e8-top-f0.75-t64-s2-h5) recording submitted.
 - 15:43: M1 ref #3 recorded; D_ref #3 submitted (last M1 GPU step before replay).
 - 16:44: all 3 M1 D_ref columns done (333 rows). Driver submitted last S1 eval (v8-e16-stretch) and, with no pivot decision yet, S2 train V3 (PCGrad). Full search replay (300 reps; caps none / ms_per_step q0.5, q0.25 / deploy_MB q0.5; budgets 400/800/1600; incl. bound_race with 4 references, predictor, zero-cost) running LOCALLY (Mac venv) to stay within the 2-job cluster limit.
+- 07-10-09 ~17:30: **E3v2 search replay** (local Mac venv, 300 reps, `results/e3v2/`), on the v1-supernet E2 table with the
+  4 references (anchor + 3 M1 refs), zero-cost proxies, predictor baseline, cost caps from `cost/a100_v2.jsonl`.
+  Bug fixed first: bound_race could return its reference when the reference lay outside the cost cap (negative
+  regret). After fix, regret at 800 eps: none: bound_race .059 | proxySH[kd] .065 | **proxySH[NASWOT] .026** | SH .071 |
+  random .121; ms/step<=median: bound_race .075 | **proxySH[kd] .009 / [NASWOT] .009** | SH .064; deploy_MB<=median:
+  **bound_race .000** | proxySH[kd] .032 | [NASWOT] .004; ms/step<=q25: all ~.045-.056.
+  -> **M1+M3 bound racing gives no consistent gain** over proxy shortlist + paired SH; it is flat in budget because
+  LB-ordering favours near-copies of the reference (same net, other knobs) and under-explores. NASWOT-shortlisted SH
+  is the strongest unconstrained. Caveat: all replay results rank SUPERNET subnets, which (Gate 1) do not reflect
+  standalone performance.
