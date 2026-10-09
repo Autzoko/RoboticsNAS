@@ -323,3 +323,4 @@ Test-set accessed only for the 6 frozen candidates (+3 resumed halves after node
 - 10:38: S1 v24-e16-stretch-f0.5-t16 @s2-h10 = 0.853 (15/16); submitted last S1 training v8-e16-stretch-f0.75-t16. M1: D_ref[v16-e12-top-f0.75-t64-s2-h10] computed for 111 archs (ref #1 SR 0.71 on its 200 recording eps); ref #2 recording submitted.
 - 12:40: M1 ref #2 (v16-e8-stretch-f0.75-t16-s4-h5) recorded; D_ref #2 submitted. S1 last training running.
 - 14:42: D_ref #2 done; M1 ref #3 (v12-e8-top-f0.75-t64-s2-h5) recording submitted.
+- 15:43: M1 ref #3 recorded; D_ref #3 submitted (last M1 GPU step before replay).
