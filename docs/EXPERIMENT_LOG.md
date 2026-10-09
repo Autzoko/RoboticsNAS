@@ -324,3 +324,4 @@ Test-set accessed only for the 6 frozen candidates (+3 resumed halves after node
 - 12:40: M1 ref #2 (v16-e8-stretch-f0.75-t16-s4-h5) recorded; D_ref #2 submitted. S1 last training running.
 - 14:42: D_ref #2 done; M1 ref #3 (v12-e8-top-f0.75-t64-s2-h5) recording submitted.
 - 15:43: M1 ref #3 recorded; D_ref #3 submitted (last M1 GPU step before replay).
+- 16:44: all 3 M1 D_ref columns done (333 rows). Driver submitted last S1 eval (v8-e16-stretch) and, with no pivot decision yet, S2 train V3 (PCGrad). Full search replay (300 reps; caps none / ms_per_step q0.5, q0.25 / deploy_MB q0.5; budgets 400/800/1600; incl. bound_race with 4 references, predictor, zero-cost) running LOCALLY (Mac venv) to stay within the 2-job cluster limit.
