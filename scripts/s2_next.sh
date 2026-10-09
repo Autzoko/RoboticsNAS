@@ -51,7 +51,10 @@ for REF in $(python3 -c "import json;print(' '.join(json.load(open('results/m1_r
       --record-dir $B/refs/$REF/visited --out $B/proxies.jsonl
     echo "next: D_ref $REF"; exit 0; fi
 done
-[ -f $(ckpt V3) ] || { submit_train V3 --pcgrad; exit 0; }
+if [ ! -f $(ckpt V3) ]; then  # PCGrad keeps 4 subnet graphs + 4 flat grads: OOM on A100-40GB -> 80GB+ only
+  sbatch -J s2_train_V3 --gres=gpu:1 --constraint="80g|h100|h200" --cpus-per-task=16 --mem=110G --time=12:00:00 \
+    scripts/gpu.sbatch rnas.train --mode supernet --out outputs/supernet_m2_V3 --steps 30000 --batch 64 --workers 12 \
+    --save-every 1000 --pcgrad; echo "next: train V3"; exit 0; fi
 done_eval V3 || { submit_eval V3; exit 0; }
 [ -f $(ckpt V2) ] || { submit_train V2 --sampler depth --kd same_depth; exit 0; }
 done_eval V2 || { submit_eval V2; exit 0; }
