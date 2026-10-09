@@ -315,3 +315,7 @@ Test-set accessed only for the 6 frozen candidates (+3 resumed halves after node
   Conclusion: weight-sharing does not rank standalone performance in this VLA space; structural fixes (V1 norm gains,
   V4 bridge adapters) do not change it. Most standalone nets are within ~0.05 SR of each other -> the meaningful
   objective is cost at iso-success, not finding a single "most accurate" net.
+- 08:36: zero-cost baselines done (`outputs/bench_sn/zerocost.jsonl`, v1 supernet, 111 archs). Kendall vs held-out
+  supernet-subnet SR (E2): kd_onpolicy 0.738 | zc_naswot 0.523 | zc_snip 0.322 | fm_loss 0.165 | zc_gradnorm -0.51
+  (inverted). S2 driver submitted M1 reference recording #1 (v16-e12-top-f0.75-t64-s2-h10). Awaiting user decision on
+  the two-stage pivot (V3/V2 not yet started).
