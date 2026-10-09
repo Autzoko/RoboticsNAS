@@ -335,3 +335,7 @@ Test-set accessed only for the 6 frozen candidates (+3 resumed halves after node
   LB-ordering favours near-copies of the reference (same net, other knobs) and under-explores. NASWOT-shortlisted SH
   is the strongest unconstrained. Caveat: all replay results rank SUPERNET subnets, which (Gate 1) do not reflect
   standalone performance.
+- 17:47: **S1 complete (16/16 standalone nets @s2-h10).** Gate-1 rank with n=16: Kendall V0 0.077 | V1 0.051 |
+  V4 -0.034; mean gap +0.198 / +0.194 / +0.182 (`results/s2_rank.md`). Conclusion unchanged.
+  S2 V3 (PCGrad) job 18729899 OOM on A100-40GB after 3 min (4 subnet graphs + 4 flat grads); resubmitted restricted
+  to 80GB+ GPUs (`--constraint 80g|h100|h200`).
