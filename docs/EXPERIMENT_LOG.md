@@ -320,3 +320,4 @@ Test-set accessed only for the 6 frozen candidates (+3 resumed halves after node
   (inverted). S2 driver submitted M1 reference recording #1 (v16-e12-top-f0.75-t64-s2-h10). Awaiting user decision on
   the two-stage pivot (V3/V2 not yet started).
 - 09:37: S1 training v24-e16-stretch-f0.5-t16 done -> eval submitted (15/16 trained). M1 ref #1 (v16-e12-top-f0.75-t64-s2-h10) recorded -> D_ref job submitted.
+- 10:38: S1 v24-e16-stretch-f0.5-t16 @s2-h10 = 0.853 (15/16); submitted last S1 training v8-e16-stretch-f0.75-t16. M1: D_ref[v16-e12-top-f0.75-t64-s2-h10] computed for 111 archs (ref #1 SR 0.71 on its 200 recording eps); ref #2 recording submitted.
