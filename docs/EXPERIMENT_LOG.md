@@ -340,3 +340,4 @@ Test-set accessed only for the 6 frozen candidates (+3 resumed halves after node
   S2 V3 (PCGrad) job 18729899 OOM on A100-40GB after 3 min (4 subnet graphs + 4 flat grads); resubmitted restricted
   to 80GB+ GPUs (`--constraint 80g|h100|h200`).
   Last S1 net v8-e16-stretch-f0.75-t16 @s2-h10 = 0.880 (ties v12-e4-stretch-f1-t16; 11.3 ms/step, 654 MB vs 6.9 ms/step, 616 MB).
+- 07-10-10 00:55: S2 train V3 (PCGrad, 18730169) started 00:04 on cn272 H100 NVL: no OOM, 1.76 it/s (~4.7 h), step 5.4k fm anchor .459 / smallest .467.
