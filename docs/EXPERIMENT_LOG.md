@@ -339,3 +339,4 @@ Test-set accessed only for the 6 frozen candidates (+3 resumed halves after node
   V4 -0.034; mean gap +0.198 / +0.194 / +0.182 (`results/s2_rank.md`). Conclusion unchanged.
   S2 V3 (PCGrad) job 18729899 OOM on A100-40GB after 3 min (4 subnet graphs + 4 flat grads); resubmitted restricted
   to 80GB+ GPUs (`--constraint 80g|h100|h200`).
+  Last S1 net v8-e16-stretch-f0.75-t16 @s2-h10 = 0.880 (ties v12-e4-stretch-f1-t16; 11.3 ms/step, 654 MB vs 6.9 ms/step, 616 MB).
