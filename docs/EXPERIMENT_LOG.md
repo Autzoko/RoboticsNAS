@@ -342,3 +342,8 @@ Test-set accessed only for the 6 frozen candidates (+3 resumed halves after node
   Last S1 net v8-e16-stretch-f0.75-t16 @s2-h10 = 0.880 (ties v12-e4-stretch-f1-t16; 11.3 ms/step, 654 MB vs 6.9 ms/step, 616 MB).
 - 07-10-10 00:55: S2 train V3 (PCGrad, 18730169) started 00:04 on cn272 H100 NVL: no OOM, 1.76 it/s (~4.7 h), step 5.4k fm anchor .459 / smallest .467.
 - 07-10-10 ~04:45: S2 train V3 (PCGrad) completed (~4.7 h on H100); eval V3 submitted.
+- 07-10-10 08:45: **Gate 1 — V3 (PCGrad) also fails** (n=16): Kendall V0 .077 | V1 .051 | V3 .068 | V4 -.034;
+  mean gap +.198 / +.194 / +.190 / +.182; shallow (e4/e8) gap ~+.25 for all four, deep gap +.143 -> +.117 at best.
+  Four structurally different fixes (norm gains, gradient-conflict projection, bridge K/V adapters) leave the ranking
+  at ~0 vs a measurable ceiling of ~0.56 -> robust negative result for weight-sharing in this VLA space.
+  V2 NOT submitted (held pending user decision on the two-stage pivot); S2 slot idle, S1 slot idle.
