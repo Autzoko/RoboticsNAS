@@ -353,3 +353,12 @@ User: "continue the automatic research" -> proceeding with the recommended two-s
 Pre-registered in `results/s3_plan.json` before any result: evaluate the step10k snapshots of the 15 S1 nets that have
 one @s2-h10 on the S1 search-val episodes (paired). Gate: Kendall(SR@10k, SR@30k) >= 0.40 and the 30k top-3 within
 the 10k top-5. Two A100 jobs (shards 0/1), ~30 min per net.
+- 2026-10-12 ~14:45: **S3 result: pre-registered gate FAILS.** Kendall(SR@10k, SR@30k) = -0.020 [95% CI -0.20, 0.30],
+  Spearman -0.05, n=15, 400 paired episodes; 30k top-3 not within 10k top-5. Mean SR 0.733 @10k -> 0.836 @30k.
+  The 10k -> 30k gain depends on expert depth: e4 +0.159 | e8 +0.070 | e12 +0.075 | e16 +0.103. The 4-layer experts
+  improve most late in training, so short training under-rates them; that is the same direction as the
+  weight-sharing supernets' shallow-subnet gap (+0.25). Selection rule (cheapest tied with best) on 10k ranking picks
+  v12-e8-top-f0.75-t64 (30k SR 0.818, regret 0.062, 8.7 ms/step), worse than both the 30k oracle (v12-e4-stretch, 0.880,
+  6.9 ms/step) and supernet V0 (default net, regret 0.037). (`results/s3/s3_rank.md`)
+  Conclusion: low-fidelity (short-training) evaluation fails too; the two-stage method as designed does not hold. Per the
+  plan, no further jobs submitted; awaiting user decision.
