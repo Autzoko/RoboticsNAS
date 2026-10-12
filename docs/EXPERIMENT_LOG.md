@@ -347,3 +347,9 @@ Test-set accessed only for the 6 frozen candidates (+3 resumed halves after node
   Four structurally different fixes (norm gains, gradient-conflict projection, bridge K/V adapters) leave the ranking
   at ~0 vs a measurable ceiling of ~0.56 -> robust negative result for weight-sharing in this VLA space.
   V2 NOT submitted (held pending user decision on the two-stage pivot); S2 slot idle, S1 slot idle.
+
+## S3 — two-stage method, stage-2 check: short standalone training (2026-10-12)
+User: "continue the automatic research" -> proceeding with the recommended two-stage pivot.
+Pre-registered in `results/s3_plan.json` before any result: evaluate the step10k snapshots of the 15 S1 nets that have
+one @s2-h10 on the S1 search-val episodes (paired). Gate: Kendall(SR@10k, SR@30k) >= 0.40 and the 30k top-3 within
+the 10k top-5. Two A100 jobs (shards 0/1), ~30 min per net.

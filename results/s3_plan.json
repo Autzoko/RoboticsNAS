@@ -1,0 +1,23 @@
+{
+ "question": "Does short standalone training (10k of 30k steps) preserve the closed-loop ranking of full standalone training? (stage 2 of the two-stage method: supernet/proxy shortlist -> short standalone -> paired race)",
+ "protocol": "search-val (init_states=False, search seeds), 10 eps/task x 40 tasks, schedule s2-h10, same episodes as S1 (paired); no official init states",
+ "gate": "Kendall(SR@10k, SR@30k) over the 15 nets >= 0.40 (~70% of the 0.56 test-retest ceiling) AND the 30k top-3 all within the 10k top-5",
+ "excluded": {"v16-e12-top-f0.5-t16-s2-h10": "no step10k snapshot"},
+ "ckpts": {
+  "v16-e16-stretch-f1-t64-s2-h10": "outputs/fixed_default/step10k.pt",
+  "v8-e12-stretch-f0.75-t64-s2-h10": "outputs/standalone/v8-e12-stretch-f0.75-t64-s2-h50/step10k.pt",
+  "v12-e4-stretch-f1-t16-s2-h10": "outputs/standalone/v12-e4-stretch-f1-t16-s4-h5/step10k.pt",
+  "v16-e8-top-f1-t16-s2-h10": "outputs/standalone/v16-e8-top-f1-t16-s4-h5/step10k.pt",
+  "v12-e8-top-f0.75-t64-s2-h10": "outputs/standalone/v12-e8-top-f0.75-t64-s2-h5/step10k.pt",
+  "v24-e4-top-f0.75-t64-s2-h10": "outputs/standalone/v24-e4-top-f0.75-t64-s10-h25/step10k.pt",
+  "v24-e16-top-f0.5-t64-s2-h10": "outputs/standalone/v24-e16-top-f0.5-t64-s2-h10/step10k.pt",
+  "v8-e4-stretch-f0.5-t64-s2-h10": "outputs/standalone/v8-e4-stretch-f0.5-t64-s2-h10/step10k.pt",
+  "v12-e4-top-f0.75-t16-s2-h10": "outputs/standalone/v12-e4-top-f0.75-t16-s2-h10/step10k.pt",
+  "v24-e8-stretch-f1-t16-s2-h10": "outputs/standalone/v24-e8-stretch-f1-t16-s2-h10/step10k.pt",
+  "v20-e8-top-f1-t64-s2-h10": "outputs/standalone/v20-e8-top-f1-t64-s2-h10/step10k.pt",
+  "v24-e12-top-f1-t64-s2-h10": "outputs/standalone/v24-e12-top-f1-t64-s2-h10/step10k.pt",
+  "v16-e12-top-f0.75-t16-s2-h10": "outputs/standalone/v16-e12-top-f0.75-t16-s2-h10/step10k.pt",
+  "v24-e16-stretch-f0.5-t16-s2-h10": "outputs/standalone/v24-e16-stretch-f0.5-t16-s2-h10/step10k.pt",
+  "v8-e16-stretch-f0.75-t16-s2-h10": "outputs/standalone/v8-e16-stretch-f0.75-t16-s2-h10/step10k.pt"
+ }
+}
