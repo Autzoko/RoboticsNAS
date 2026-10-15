@@ -224,7 +224,7 @@ class ElasticSmolVLA(nn.Module):
         ], state
 
     @torch.no_grad()
-    def sample_actions(self, batch: dict, arch: Arch, noise: Tensor | None = None) -> Tensor:
+    def sample_actions(self, batch: dict, arch: Arch, noise: Tensor | None = None, full: bool = False) -> Tensor:
         images, img_masks, lt, lm, state = self.prepare(batch)
         kvs, pad = self.prefix_kv(images, img_masks, lt, lm, state, arch.vtok, arch.vlm_layers_needed())
         bsz = state.shape[0]
@@ -235,5 +235,7 @@ class ElasticSmolVLA(nn.Module):
         for i in range(arch.steps):
             t = torch.full((bsz,), 1.0 + i * dt, dtype=torch.float32, device=state.device)
             x = x + dt * self.velocity(kvs, pad, x, t, arch)
+        if full:  # padded max_action_dim chunk (flow-matching target space)
+            return x
         n_act = self.policy.config.action_feature.shape[0]
         return x[:, :, :n_act]

@@ -1,0 +1,13 @@
+{
+ "question": "Does teacher-imitation training make short (10k-step) standalone training rank archs like full 30k plain training? (fidelity mechanism for distillation-accelerated closed-loop NAS)",
+ "teacher": {"ckpt": "outputs/fixed_default/final.pt", "arch": "v16-e16-stretch-f1-t64-s2-h10",
+             "note": "our 30k plain-trained default net (train split only; search-val SR 0.843); no LIBERO-finetuned public weights"},
+ "visited_states": "teacher rollouts on search-val layouts with episodes 500-519 per task (seeds 1,000,000+1000*task+ep; disjoint from all evaluation episodes, which use eps < 210), every 10th step recorded; init_states=False; no official init states",
+ "student_training": "same as S1 plain (lr 1e-4 cosine over 30k steps, warmup 1k, batch 64 demos, seed 0) halted at 10k (--stop-at), plus loss = FM_gt(demo) + ||v_s - v_T||^2 on demo x_t + ||v_s - v_T||^2 on 32 teacher-visited states with x_t from the teacher's sampled chunk",
+ "eval": "step10k @s2-h10, search-val, 10 eps/task x 40 tasks, same episodes as S1/S3 (paired)",
+ "archs": ["v12-e4-stretch-f1-t16-s2-h10", "v24-e4-top-f0.75-t64-s2-h10", "v8-e4-stretch-f0.5-t64-s2-h10",
+           "v20-e8-top-f1-t64-s2-h10", "v16-e8-top-f1-t16-s2-h10", "v8-e12-stretch-f0.75-t64-s2-h10",
+           "v8-e16-stretch-f0.75-t16-s2-h10", "v16-e16-stretch-f1-t64-s2-h10"],
+ "gate": "Kendall(SR distill@10k, SR plain@30k) over the 8 nets >= 0.40 AND >= plain@10k Kendall on the same 8 + 0.2",
+ "secondary": "mean SR distill@10k vs plain@10k and plain@30k (confound: distilled students also see teacher-visited sim states the plain runs never saw)"
+}

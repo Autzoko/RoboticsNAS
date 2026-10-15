@@ -362,3 +362,12 @@ the 10k top-5. Two A100 jobs (shards 0/1), ~30 min per net.
   6.9 ms/step) and supernet V0 (default net, regret 0.037). (`results/s3/s3_rank.md`)
   Conclusion: low-fidelity (short-training) evaluation fails too; the two-stage method as designed does not hold. Per the
   plan, no further jobs submitted; awaiting user decision.
+
+## S4 — teacher-imitation (distillation-accelerated) short training (2026-10-15)
+User approved the teacher-imitation test. Pre-registered in `results/s4_plan.json`: teacher = our 30k plain default
+(`outputs/fixed_default/final.pt`, s2-h10); teacher-visited states from its rollouts on fresh search layouts
+(eps 500-519/task, disjoint from all eval eps). Student = 8 S1 nets spanning expert depths 4-16, trained with the S1
+recipe halted at 10k plus velocity matching to the teacher on demo and visited states (`rnas.train --teacher --visited
+--stop-at`). Gate: Kendall(distill@10k, plain@30k) >= 0.40 and >= plain@10k + 0.2 on the same 8.
+Driver `scripts/s4_next.sh` (<= 2 jobs). Plus one 30-step functional check of the new training path
+(on existing anchor recordings) alongside the teacher recording.

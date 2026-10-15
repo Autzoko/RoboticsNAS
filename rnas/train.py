@@ -91,6 +91,55 @@ def pcgrad(losses, params):
     return torch.stack(proj).sum(0)
 
 
+def distill_losses(model, teacher, t_arch: Arch, batch, arch: Arch, demo: bool):
+    """Teacher imitation for a fixed student. Velocity matching at shared (x_t, t): on demo states x_t is built from
+    the GT chunk (plus the usual GT flow-matching loss); on teacher-visited states from the teacher's own sampled chunk.
+    Teacher velocity ~ E[u | x_t], a lower-variance target than the single-sample GT flow u_t."""
+    images, img_masks, lt, lm, state = model.prepare(batch)
+    bsz = state.shape[0]
+    if demo:
+        actions, is_pad = model.policy.prepare_action(batch), batch["action_is_pad"]
+    else:
+        actions = teacher.sample_actions(batch, t_arch, full=True).float()
+        is_pad = torch.zeros(bsz, model.chunk, dtype=torch.bool, device=actions.device)
+    noise = model.m.sample_noise(actions.shape, actions.device)
+    t = model.m.sample_time(bsz, actions.device)
+    x_t = t[:, None, None] * noise + (1 - t[:, None, None]) * actions
+    with torch.no_grad(), teacher.image_cache():
+        tk = teacher.prefix_kv(*teacher.prepare(batch), t_arch.vtok, t_arch.vlm_layers_needed())
+        v_t = teacher.velocity(*tk, x_t, t, t_arch).detach()
+    with model.image_cache():
+        kvs, pad = model.prefix_kv(images, img_masks, lt, lm, state, arch.vtok, arch.vlm_layers_needed())
+    v = model.velocity(kvs, pad, x_t, t, arch)
+    fm = masked_mse(v.float(), noise - actions, is_pad) if demo else None
+    return fm, masked_mse(v.float(), v_t.float(), is_pad)
+
+
+class Visited:
+    """Teacher-visited states recorded by rollout.py (--record-dir), held in RAM, sampled uniformly over states."""
+
+    def __init__(self, record_dir: str, seed: int = 0):
+        import glob
+
+        import numpy as np
+
+        parts = [np.load(f, allow_pickle=True) for f in sorted(glob.glob(f"{record_dir}/*.npz"))]
+        assert parts, f"no recordings in {record_dir}"
+        self.img = np.concatenate([z["img"] for z in parts])
+        self.img2 = np.concatenate([z["img2"] for z in parts])
+        self.state = np.concatenate([z["state"] for z in parts])
+        self.desc = sum([[str(z["desc"])] * len(z["state"]) for z in parts], [])
+        self.rng = np.random.default_rng(seed)
+        print(f"visited states: {len(self.state)} from {len(parts)} tasks", flush=True)
+
+    def batch(self, bs: int) -> dict:
+        j = self.rng.integers(0, len(self.state), bs)
+        return {"observation.images.image": torch.from_numpy(self.img[j]).float() / 255,
+                "observation.images.image2": torch.from_numpy(self.img2[j]).float() / 255,
+                "observation.state": torch.from_numpy(self.state[j]).float(),
+                "task": [self.desc[i] for i in j]}
+
+
 def lr_at(step, peak, warmup, total, final):
     if step < warmup:
         return peak * (step + 1) / warmup
@@ -123,6 +172,11 @@ def main():
     ap.add_argument("--pcgrad", action="store_true", help="M2-V3 conflict projection across subnets")
     ap.add_argument("--trainable", choices=["all", "readout"], default="all",
                     help="readout = only expert final norm + action_out_proj (S0 readout probe)")
+    ap.add_argument("--teacher", default=None, help="fixed mode: teacher ckpt -> teacher-imitation training")
+    ap.add_argument("--teacher-arch", default="v16-e16-stretch-f1-t64-s2-h10")
+    ap.add_argument("--visited", default=None, help="teacher-visited state recordings (rollout --record-dir)")
+    ap.add_argument("--visited-bs", type=int, default=32)
+    ap.add_argument("--stop-at", type=int, default=None, help="halt at this step; lr schedule still spans --steps")
     ap.add_argument("--split", default="configs/split.json")
     ap.add_argument("--stats", default="configs/train_stats.json")
     args = ap.parse_args()
@@ -151,6 +205,15 @@ def main():
         model.enable_kv_adapter()
     if args.init:
         load_trainable(model, args.init)
+    teacher, t_arch, visited = None, None, None
+    if args.teacher:
+        assert args.mode == "fixed"
+        teacher = build_elastic("cuda", sort_neurons=False)
+        load_trainable(teacher, args.teacher)
+        teacher.eval().requires_grad_(False)
+        t_arch = Arch.from_key(args.teacher_arch)
+        if args.visited:
+            visited = Visited(args.visited, args.seed)
     save_names = {n for n, p in model.named_parameters() if p.requires_grad}  # full expert set in ckpts
     if args.trainable == "readout":
         keep = ("lm_expert.norm.", "action_out_proj.")
@@ -189,11 +252,12 @@ def main():
     log_f = open(out / "train_log.jsonl", "a") if rank == 0 else None
     t0, epoch = time.time(), 0
     model.train()
-    while step < args.steps:
+    end = min(args.steps, args.stop_at or args.steps)
+    while step < end:
         if sampler is not None:
             sampler.set_epoch(epoch)
         for batch in dl:
-            if step >= args.steps:
+            if step >= end:
                 break
             batch = pre(batch)
             if args.mode == "supernet":
@@ -204,8 +268,16 @@ def main():
             for g in opt.param_groups:
                 g["lr"] = lr_at(step, args.lr, args.warmup, args.steps, args.lr_final)
             with torch.autocast("cuda", dtype=torch.bfloat16):
-                res = flow_losses(model, batch, archs, args.kd_weight if args.mode == "supernet" else 0.0,
-                                  kd_mode=args.kd)
+                if teacher is not None:
+                    fm, kd = distill_losses(model, teacher, t_arch, batch, fixed, demo=True)
+                    if visited is not None:
+                        _, kdv = distill_losses(model, teacher, t_arch, pre(visited.batch(args.visited_bs)), fixed,
+                                                demo=False)
+                        kd = kd + kdv
+                    res = [(fixed, fm, kd)]
+                else:
+                    res = flow_losses(model, batch, archs, args.kd_weight if args.mode == "supernet" else 0.0,
+                                      kd_mode=args.kd)
             per = [fm + (args.kd_weight * kd if kd is not None else 0.0) for _, fm, kd in res]
             loss = sum(per)
             opt.zero_grad(set_to_none=True)
@@ -267,7 +339,7 @@ def main():
                       "rng": rng.getstate(), "args": vars(args)}
                 torch.save(ck, out / "last.tmp")
                 os.replace(out / "last.tmp", out / "last.pt")
-                if step % 10000 == 0:  # keep sparse snapshots (offline-loss vs closed-loop over training)
+                if step % 10000 == 0 or step == end:  # keep sparse snapshots (offline-loss vs closed-loop over training)
                     torch.save({"model": ck["model"], "step": step}, out / f"step{step // 1000}k.pt")
         epoch += 1
     if rank == 0:
