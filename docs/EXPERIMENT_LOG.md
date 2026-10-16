@@ -371,3 +371,13 @@ recipe halted at 10k plus velocity matching to the teacher on demo and visited s
 --stop-at`). Gate: Kendall(distill@10k, plain@30k) >= 0.40 and >= plain@10k + 0.2 on the same 8.
 Driver `scripts/s4_next.sh` (<= 2 jobs). Plus one 30-step functional check of the new training path
 (on existing anchor recordings) alongside the teacher recording.
+- 2026-10-16 ~18:00: **S4 result: pre-registered gate FAILS.** n=8, 400 paired search-val episodes.
+  Kendall vs plain@30k: distill@10k 0.222 [95% CI -0.26, 0.62] | plain@10k 0.109 [-0.11, 0.50]; difference +0.11
+  [-0.50, +0.49] (gate needed >= 0.40 and +0.2). Teacher imitation lifts mean SR at 10k (0.725 -> 0.785; weakest net
+  v24-e4 0.540 -> 0.775) but compresses the spread across nets to std 0.016 (< per-net SE 0.018; plain@30k std 0.042):
+  students converge to the teacher's level, so the ranking signal is erased. The teacher's own architecture
+  (v16-e16 default, self-distillation) scores highest (0.812) -> imitation also rewards similarity to the teacher.
+  Selection rule on distill@10k happens to pick the oracle net v12-e4-stretch (regret 0) because 6/8 nets are tied
+  and it is the cheapest tied one; not a reliable mechanism given the failed ranking. (`results/s4/s4_rank.md`)
+  Conclusion: none of the cheap evaluation routes (offline loss, 4 supernet variants, short training, teacher-imitation
+  short training) recovers the full-training closed-loop ranking. Loop stopped; no jobs running; awaiting user decision.
